@@ -1,2 +1,2 @@
-instance
-.venv
+instance/
+.venv/

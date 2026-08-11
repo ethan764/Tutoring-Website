@@ -17,7 +17,7 @@
     <hr>
     <h2>Students needing lesson planning</h2>
     <ul>
-        {% for student in students %}
+        {% for student in students %} 
             <li><a href="{{ url_for('lesson_planner_create_lesson', student_id=student.id) }}">{{ student.name }}: {{ student.scheduled_lesson_ids | length }} lessons</a></li>
         {% endfor %}
     </ul>

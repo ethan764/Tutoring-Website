@@ -111,6 +111,7 @@ def lesson_planner_create_lesson(student_id):
         # Create a new Lesson object
         new_lesson = Lesson(
             student_id=student.id,
+            student_name=student.name,
             lesson_date=lesson_date,
             lesson_notes=lesson_notes,
             lesson_work= lesson_homework,
@@ -122,7 +123,7 @@ def lesson_planner_create_lesson(student_id):
         student.scheduled_lesson_ids.append(new_lesson.id)
         db.session.commit()
 
-        return redirect(url_for('student_chart', student_id=student.id))
+        return redirect(url_for('task_manager', student_id=student.id))
 
     return render_template('lesson planner.html', student=student, lesson=None, previous_lessons=Lesson.query.filter_by(student_id=student.id).order_by(Lesson.lesson_date.desc()).all())
 
@@ -138,7 +139,7 @@ def lesson_planner_edit_lesson(student_id, lesson_id):
         lesson.lesson_work = request.form.get('lesson_homework')
         db.session.commit()
 
-        return redirect(url_for('student_chart', student_id=student.id))
+        return redirect(url_for('task_manager', student_id=student.id))
 
     return render_template('lesson planner.html', student=student, lesson=lesson, previous_lessons=Lesson.query.filter_by(student_id=student.id).order_by(Lesson.lesson_date.desc()).all())
 
