@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lesson Planner</title>
+</head>
+<body>
+    <h1>Lesson Planner for {{ student.name }}</h1>
+    <h2>Suggessted Content and Homework</h2>
+    <p>[suggestion]</p>
+    <h2>Other Information</h2>
+    <p>Planned lessons: {{ student.scheduled_lessons | length }}</p>
+    <hr>
+
+    {% if lesson is none %}
+    <form id="lesson-form" action="/lesson_planner/{{ student.id }}" method="post">
+        <label for="lesson-date">Lesson Date:</label><input type="date" id="lesson-date" name="lesson_date">
+        <label for="lesson-homework">Homework:</label><textarea type="text" id="lesson-homework" name="lesson_homework"></textarea>
+        <label for="lesson-notes">Pre-Lesson Notes:</label><textarea type="text" id="lesson-notes" name="lesson_notes"></textarea>
+        
+        <button type="submit">Submit</button>
+    </form>
+    {% else %}
+    <form id="lesson-form" action="/lesson_planner/{{ student.id }}/{{ lesson.id }}" method="post">
+        <label for="lesson-date">Lesson Date:</label><input type="date" id="lesson-date" name="lesson_date" value="{{ lesson.lesson_date }}">
+        <label for="lesson-homework">Homework:</label><textarea type="text" id="lesson-homework" name="lesson_homework">{{ lesson.lesson_homework }}</textarea>
+        <label for="lesson-notes">Pre-Lesson Notes:</label><textarea type="text" id="lesson-notes" name="lesson_notes">{{ lesson.lesson_notes }}</textarea>
+        <button type="submit">Update</button>
+    </form>
+    {% endif %}
+    <hr>
+    <h2>Previous Lessons</h2>
+    {% for lesson in previous_lessons %}
+        <p><a href="{{ url_for('lesson_planner_edit_lesson', student_id=student.id, lesson_id=lesson.id) }}">Edit Lesson on {{ lesson.lesson_date }}</a></p>
+        <ul>
+            <li>Lesson Date and Time: {{ lesson.lesson_date }}</li>
+            <li>Notes: {{ lesson.lesson_notes }}</li>
+            <li>Work: {{ lesson.lesson_work }}</li>
+            <li>Post-Lesson Notes: {{ lesson.post_lesson_notes }}</li>
+        
+        </ul>
+    {% endfor %}
+    <hr>
+    <a href="{{ url_for('student_chart', student_id=student.id) }}">Back to Student Chart</a>
+</body>
+</html>

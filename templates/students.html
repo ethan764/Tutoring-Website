@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student List</title>
+    <link rel="stylesheet" href="students.css">
+</head>
+<body>
+    <h1>Student List</h1>
+    <a href="{{ url_for('task_manager') }}">Go to Task Manager</a>
+    <hr>
+    <table>
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Meet link</th>
+                <th>Schedule</th>
+                <th>Net Credit</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for student in students %}
+            <tr id="format">
+                <th scope="row"><a href="{{ url_for('student_chart', student_id=student.id) }}"> {{ student.name }} </a></th>
+                <td><a href="https://{{ student.meeting_link }}" target="_blank">google meet link</a></td>
+                <td><form action="/update_schedule/{{ student.id }}" method="post"><input type="text" name="schedule" placeholder="{{ student.schedule | join(', ') }}" value=""></form></td>
+                <td>Net: {{  student.lessons_credited - student.lessons_taken }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+        <tfoot>
+            <tr>
+                <td colspan="4">
+                    <form action="/add_student" method="post">
+                        <input type="text" name="name" placeholder="Student Name">
+                        <input type="text" name="meeting_link" placeholder="Google Meet Link">
+                        <input type="text" name="schedule" placeholder="Schedule (comma-separated)">
+                        <button type="submit">Add Student</button>
+                    </form>
+                </td>
+            </tr>
+    </table>
+</body>
+</html>
