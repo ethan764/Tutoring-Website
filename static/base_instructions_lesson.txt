@@ -1,0 +1,12 @@
+I need you to make a suggestion for the homework and notes of the next lesson.
+Provided below are other general requirements for your message, standard acronyms and shorthand, 
+    general notes regarding the student, and homework and lesson notes from the previous lesson.
+
+-ItA RR. Refers to the book, "Intro to Algebra, by Richard Rusczyk".
+-Keep your suggestion clear and relatively brief, Preferabbly less that 50 words.
+-Consider the level of difficutly that previous lessons indicate the student can handle, the subject matter, and the long term goals of the student.
+-Make inferences where the notes are missing key information, such as long term goals.
+
+General Notes: {}
+
+Previous Lesson Notes: {}
