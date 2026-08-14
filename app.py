@@ -20,7 +20,7 @@ class Student(db.Model):
     meeting_link = db.Column(db.String(200), nullable=True)
 
     def __repr__(self):
-        return f'<Student {self.name}, {self.id}>'
+        return f'<Student {self.name}, {self.id}, Scheduled Lessons: {self.scheduled_lesson_ids}>'
 
 class Lesson(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -73,7 +73,14 @@ def add_student():
 
 @app.route('/student_chart/<int:student_id>')
 def student_chart(student_id):
+
+
     student = Student.query.get_or_404(student_id)
+
+    # Update database scheduled id's to match the actual scheduled lessons for the student
+    student.scheduled_lesson_ids = [lesson.id for lesson in Lesson.query.filter_by(student_id=student.id, completed=False).all()]
+    db.session.commit()
+
     student_scheduled_lessons = Lesson.query.filter_by(student_id=student.id, completed=False).all()
     student_past_lessons = Lesson.query.filter_by(student_id=student.id, completed=True).all()
     return render_template('student_chart.html', student=student, scheduled_lessons=student_scheduled_lessons, past_lessons=student_past_lessons)
@@ -93,7 +100,7 @@ def record_lesson(student_id):
 
     student.lessons_taken += lesson.lesson_duration #counts hours
     if lesson.id in student.scheduled_lesson_ids:
-        student.scheduled_lesson_ids.remove(lesson.id)
+        student.scheduled_lesson_ids = [lid for lid in student.scheduled_lesson_ids if lid != lesson.id]  # Remove the lesson ID from scheduled lessons
 
     db.session.commit()
 
@@ -120,7 +127,7 @@ def lesson_planner_create_lesson(student_id):
         db.session.add(new_lesson)
 
         # Update the student's scheduled lessons
-        student.scheduled_lesson_ids.append(new_lesson.id)
+        student.scheduled_lesson_ids = student.scheduled_lesson_ids + [new_lesson.id]
         db.session.commit()
 
         return redirect(url_for('task_manager', student_id=student.id))
@@ -151,7 +158,8 @@ def task_manager():
     unplanned_lessons = Lesson.query.filter_by(lesson_notes='', lesson_work='', completed=False).order_by(Lesson.lesson_date).all()
 
     # Sort students by the number of scheduled lessons in descending order
-    students.sort(key=lambda s: len(s.scheduled_lesson_ids), reverse=True)
+    students.sort(key=lambda s: len(s.scheduled_lesson_ids), reverse=False)
+    print(students)
 
     return render_template('task manager.html', students=students, unplanned_lessons=unplanned_lessons)
 
