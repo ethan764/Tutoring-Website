@@ -1,11 +1,13 @@
-from flask import Flask, redirect, render_template, request, url_for
+from flask import Flask, redirect, render_template, request, url_for, abort
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
-from flask_login import LoginManager, UserMixin, login_required, login_user, logout_user
+from flask_login import LoginManager, UserMixin, login_required, login_user, logout_user, current_user
 from flask_wtf import FlaskForm
 from wtforms import PasswordField, PasswordField, SubmitField, StringField
 from wtforms.validators import DataRequired, Email, Length, ValidationError
 from flask_bcrypt import Bcrypt
+from functools import wraps
+
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///test.db'
@@ -20,6 +22,18 @@ login_manager.init_app(app)
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
+
+
+ADMIN_USER_EMAILS = {'ethannguyen764@gmail.com', 'ethan.nguyen.tutoring@gmail.com'}
+def admin_whitelist_check(f):
+    @wraps(f)
+    def wrapper(*args, **kwargs):
+        if not current_user.is_authenticated:
+            abort(401)
+        if current_user.email not in ADMIN_USER_EMAILS:
+            abort(403)
+        return f(*args, **kwargs)
+    return wrapper
 
 class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
@@ -70,6 +84,7 @@ def register():
 @login_required
 def logout():
     logout_user()
+    return redirect(url_for('login'))
 
 class Student(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -104,12 +119,14 @@ class Lesson(db.Model):
 
 @app.route('/')
 @login_required
+@admin_whitelist_check
 def index():
     students = Student.query.all() #todo order by soonest lesson
     return render_template('students.html', students=students)
 
 @app.route('/update_schedule/<int:student_id>', methods=['POST'])
 @login_required
+@admin_whitelist_check
 def update_schedule(student_id):
     student = Student.query.get_or_404(student_id)
     student.schedule = request.form.get('schedule').split(', ')
@@ -118,6 +135,7 @@ def update_schedule(student_id):
 
 @app.route('/update_student/<int:student_id>', methods=['POST'])
 @login_required
+@admin_whitelist_check
 def update_student(student_id):
     student = Student.query.get_or_404(student_id)
     student.name = request.form.get('name')
@@ -129,6 +147,7 @@ def update_student(student_id):
 
 @app.route('/add_student', methods=['POST'])
 @login_required
+@admin_whitelist_check
 def add_student():
     name = request.form.get('name')
     meeting_link = request.form.get('meeting_link')
@@ -142,6 +161,7 @@ def add_student():
 
 @app.route('/student_chart/<int:student_id>')
 @login_required
+@admin_whitelist_check
 def student_chart(student_id):
 
 
@@ -158,6 +178,7 @@ def student_chart(student_id):
 
 @app.route('/record_lesson/<int:student_id>', methods=['POST'])
 @login_required
+@admin_whitelist_check
 def record_lesson(student_id):
     student = Student.query.get_or_404(student_id)
     lesson_id = request.form.get('lesson_id')
@@ -179,6 +200,7 @@ def record_lesson(student_id):
 
 @app.route('/lesson_planner/<int:student_id>', methods=['GET', 'POST'])
 @login_required
+@admin_whitelist_check
 def lesson_planner_create_lesson(student_id):
     student = Student.query.get_or_404(student_id)
     if request.method == 'POST':
@@ -208,6 +230,7 @@ def lesson_planner_create_lesson(student_id):
 
 @app.route('/lesson_planner/<int:student_id>/<int:lesson_id>', methods=['GET', 'POST'])
 @login_required
+@admin_whitelist_check
 def lesson_planner_edit_lesson(student_id, lesson_id):
     student = Student.query.get_or_404(student_id)
     lesson = Lesson.query.get_or_404(lesson_id)
@@ -226,6 +249,7 @@ def lesson_planner_edit_lesson(student_id, lesson_id):
 
 @app.route('/task_manager')
 @login_required
+@admin_whitelist_check
 def task_manager():
     students = Student.query.filter(Student.schedule != []).all()
 
