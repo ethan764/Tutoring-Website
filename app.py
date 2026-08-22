@@ -1,10 +1,75 @@
 from flask import Flask, redirect, render_template, request, url_for
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
+from flask_login import LoginManager, UserMixin, login_required, login_user, logout_user
+from flask_wtf import FlaskForm
+from wtforms import PasswordField, PasswordField, SubmitField, StringField
+from wtforms.validators import DataRequired, Email, Length, ValidationError
+from flask_bcrypt import Bcrypt
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///test.db'
+app.config['SECRET_KEY'] = 'secret_key'
 db = SQLAlchemy(app)
+bcrypt = Bcrypt(app)
+
+login_manager = LoginManager(app)
+login_manager.login_view = 'login'
+login_manager.init_app(app)
+
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(int(user_id))
+
+class User(db.Model, UserMixin):
+    id = db.Column(db.Integer, primary_key=True)
+    email = db.Column(db.String(150), unique=True, nullable=False)
+    password_hashed = db.Column(db.String(150), nullable=False)
+
+class RegisterForm(FlaskForm):
+    email = StringField('Email', validators=[DataRequired(), Email(message='Please enter a valid email address.'), Length(min=6, max=100)])
+    password = PasswordField('Password', validators=[DataRequired(), Length(min=6, max=20)])
+    submit = SubmitField('Register')
+
+    def validate_email(self, email):
+        user = User.query.filter_by(email=email.data).first()
+        if user:
+            raise ValidationError('Email is already registered. Please choose a different one.')
+
+class LoginForm(FlaskForm):
+    email = StringField('Email', validators=[DataRequired(), Email(message='Please enter a valid email address.'), Length(min=6, max=100)])
+    password = PasswordField('Password', validators=[DataRequired(), Length(min=6, max=20)])
+    submit = SubmitField('Login')
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    form = LoginForm()
+    if form.validate_on_submit():
+        user = User.query.filter_by(email=form.email.data).first()
+        if user and bcrypt.check_password_hash(user.password_hashed, form.password.data):
+            login_user(user)
+            return redirect(url_for('index'))
+        else:
+            return render_template('login.html', form=form, title='Login', error='Invalid email or password.')
+    return render_template('login.html', form=form, title='Login')
+
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    form = RegisterForm()
+    if form.validate_on_submit():
+        # Create new user
+        hashed_password = bcrypt.generate_password_hash(form.password.data).decode('utf-8')
+        user = User(email=form.email.data, password_hashed=hashed_password)
+        db.session.add(user)
+        db.session.commit()
+        print(f"Registered new user: {user.email}")
+        return redirect(url_for('login'))
+    return render_template('register.html', form=form, title='Register')
+
+@app.route('/logout')
+@login_required
+def logout():
+    logout_user()
 
 class Student(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -38,11 +103,13 @@ class Lesson(db.Model):
         return f'<Lesson for Student ID {self.student_id}>'
 
 @app.route('/')
+@login_required
 def index():
     students = Student.query.all() #todo order by soonest lesson
     return render_template('students.html', students=students)
 
 @app.route('/update_schedule/<int:student_id>', methods=['POST'])
+@login_required
 def update_schedule(student_id):
     student = Student.query.get_or_404(student_id)
     student.schedule = request.form.get('schedule').split(', ')
@@ -50,6 +117,7 @@ def update_schedule(student_id):
     return redirect(url_for('index'))
 
 @app.route('/update_student/<int:student_id>', methods=['POST'])
+@login_required
 def update_student(student_id):
     student = Student.query.get_or_404(student_id)
     student.name = request.form.get('name')
@@ -60,6 +128,7 @@ def update_student(student_id):
     return redirect(url_for('student_chart', student_id=student.id))
 
 @app.route('/add_student', methods=['POST'])
+@login_required
 def add_student():
     name = request.form.get('name')
     meeting_link = request.form.get('meeting_link')
@@ -72,6 +141,7 @@ def add_student():
     return redirect(url_for('index'))
 
 @app.route('/student_chart/<int:student_id>')
+@login_required
 def student_chart(student_id):
 
 
@@ -82,11 +152,12 @@ def student_chart(student_id):
     db.session.commit()
 
     student_scheduled_lessons = Lesson.query.filter_by(student_id=student.id, completed=False).all()
-    student_past_lessons = Lesson.query.filter_by(student_id=student.id, completed=True).all()
+    student_past_lessons = Lesson.query.filter_by(student_id=student.id, completed=True).order_by(Lesson.lesson_date.desc()).all()
     return render_template('student_chart.html', student=student, scheduled_lessons=student_scheduled_lessons, past_lessons=student_past_lessons)
 
 
 @app.route('/record_lesson/<int:student_id>', methods=['POST'])
+@login_required
 def record_lesson(student_id):
     student = Student.query.get_or_404(student_id)
     lesson_id = request.form.get('lesson_id')
@@ -107,6 +178,7 @@ def record_lesson(student_id):
     return redirect(url_for('student_chart', student_id=student.id))
 
 @app.route('/lesson_planner/<int:student_id>', methods=['GET', 'POST'])
+@login_required
 def lesson_planner_create_lesson(student_id):
     student = Student.query.get_or_404(student_id)
     if request.method == 'POST':
@@ -135,6 +207,7 @@ def lesson_planner_create_lesson(student_id):
     return render_template('lesson planner.html', student=student, lesson=None, previous_lessons=Lesson.query.filter_by(student_id=student.id).order_by(Lesson.lesson_date.desc()).all())
 
 @app.route('/lesson_planner/<int:student_id>/<int:lesson_id>', methods=['GET', 'POST'])
+@login_required
 def lesson_planner_edit_lesson(student_id, lesson_id):
     student = Student.query.get_or_404(student_id)
     lesson = Lesson.query.get_or_404(lesson_id)
@@ -146,12 +219,13 @@ def lesson_planner_edit_lesson(student_id, lesson_id):
         lesson.lesson_work = request.form.get('lesson_homework')
         db.session.commit()
 
-        return redirect(url_for('task_manager', student_id=student.id))
+        return redirect(url_for('student_chart', student_id=student.id))
 
     return render_template('lesson planner.html', student=student, lesson=lesson, previous_lessons=Lesson.query.filter_by(student_id=student.id).order_by(Lesson.lesson_date.desc()).all())
 
 
 @app.route('/task_manager')
+@login_required
 def task_manager():
     students = Student.query.filter(Student.schedule != []).all()
 
@@ -162,6 +236,8 @@ def task_manager():
     print(students)
 
     return render_template('task manager.html', students=students, unplanned_lessons=unplanned_lessons)
+
+
 
 if __name__ == '__main__':
     app.run(debug=True)

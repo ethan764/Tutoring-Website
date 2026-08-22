@@ -55,5 +55,3 @@ def test():
     general_notes = "The student is preparing for a math competition in two months. They have a strong foundation in algebra but need to improve problem-solving skills."
     suggestion = suggest_lessons(previous_lessons, general_notes)
     print(suggestion)
-
-test()
