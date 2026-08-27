@@ -7,6 +7,7 @@ from wtforms import PasswordField, PasswordField, SubmitField, StringField
 from wtforms.validators import DataRequired, Email, Length, ValidationError
 from flask_bcrypt import Bcrypt
 from functools import wraps
+from lesson_suggestion import suggest_lessons_ollama
 
 
 app = Flask(__name__)
@@ -261,7 +262,14 @@ def task_manager():
 
     return render_template('task manager.html', students=students, unplanned_lessons=unplanned_lessons)
 
-
+@app.route('/reqs/lesson-suggestion/<int:student_id>')
+@login_required
+@admin_whitelist_check
+def suggest_lesson(student_id):
+    student = Student.query.get_or_404(student_id)
+    previous_lessons=Lesson.query.filter_by(student_id=student.id).order_by(Lesson.lesson_date.desc()).all()
+    suggestion = suggest_lessons_ollama(previous_lessons, student.general_notes)
+    return suggestion
 
 if __name__ == '__main__':
     app.run(debug=True)

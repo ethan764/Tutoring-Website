@@ -8,7 +8,16 @@
 <body>
     <h1>Lesson Planner for {{ student.name }}</h1>
     <h2>Suggessted Content and Homework</h2>
-    <p>[suggestion]</p>
+    <p id="suggestor">Pending...</p>
+
+    <script>
+        fetch('/reqs/lesson-suggestion/{{ student.id }}').then(r => r.text()).then(data=>{
+            document.getElementById('suggestor').innerText = data
+        }).catch(error =>{
+            document.getElementById('suggestor').innerText = "Could not load: " + error.data.text
+        })
+    </script>
+
     <h2>Other Information</h2>
     <p>Planned lessons: {{ student.scheduled_lessons | length }}</p>
     <hr>
