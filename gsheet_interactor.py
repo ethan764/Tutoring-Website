@@ -6,18 +6,19 @@ sh = gc.open("Lesson and Payment Record Spreadsheet")
 
 
 balance_sheet = sh.worksheet('balance')
-def update_student_info():
+def get_student_info():
     information=balance_sheet.get_all_records()
 
     students_update = {}
 
     for dict in information:
         if dict['Name'] != '':
+            print(dict['Meeting Times'])
             students_update[dict['Name']] = {
-                'lessons_taken' : dict['Hours Spent'],
-                'lessons_credited' : dict['Hours Credited'],
+                'lessons_taken' : int(dict['Hours Spent']),
+                'lessons_credited' : int(dict['Hours Credited']),
                 'meeting_link' : dict['Meet Link'],
-                'schedule' : dict['Meeting Times']
+                'schedule' : dict['Meeting Times'].split(', ')
             }
 
     return students_update
@@ -25,10 +26,18 @@ def update_student_info():
 lessons_sheet = sh.worksheet('Lesson Record')
 sheets_timestamp_format = "%m/%d/%Y %H:%M:%S"
 
-def get_lesson_info(student_name):
+def get_lesson_info():
     information=lessons_sheet.get_all_records()
-    lesson_info = {}
+    students_lesson_info = {} # dictionary with keys as student name; value pairs as dictionaries of dictionaries representing the lessons
+    # not made to scale lol
 
     for lesson in information:
+        students_lesson_info.setdefault(lesson['Student'], {})
+
         dt = datetime.strptime(lesson['Timestamp'], sheets_timestamp_format)
-        lesson_info[dt.date] = {}
+        students_lesson_info[lesson['Student']][str(dt.date())] = {
+            'post_lesson_notes' : lesson['Notes'],
+            'lesson_duration' : int(lesson['Length of Lesson (hrs)'])
+        }
+
+    return students_lesson_info

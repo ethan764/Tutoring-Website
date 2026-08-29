@@ -1,5 +1,6 @@
 from flask import Flask, redirect, render_template, request, url_for, abort
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import and_, cast, String
 from datetime import datetime
 from flask_login import LoginManager, UserMixin, login_required, login_user, logout_user, current_user
 from flask_wtf import FlaskForm
@@ -8,6 +9,8 @@ from wtforms.validators import DataRequired, Email, Length, ValidationError
 from flask_bcrypt import Bcrypt
 from functools import wraps
 from lesson_suggestion import suggest_lessons_ollama
+from gsheet_interactor import get_lesson_info, get_student_info
+from json import dumps
 
 
 app = Flask(__name__)
@@ -165,9 +168,9 @@ def add_student():
 @admin_whitelist_check
 def student_chart(student_id):
 
-
     student = Student.query.get_or_404(student_id)
 
+    
     # Update database scheduled id's to match the actual scheduled lessons for the student
     student.scheduled_lesson_ids = [lesson.id for lesson in Lesson.query.filter_by(student_id=student.id, completed=False).all()]
     db.session.commit()
@@ -235,6 +238,7 @@ def lesson_planner_create_lesson(student_id):
 def lesson_planner_edit_lesson(student_id, lesson_id):
     student = Student.query.get_or_404(student_id)
     lesson = Lesson.query.get_or_404(lesson_id)
+    print(lesson.lesson_date)
 
     if request.method == 'POST':
         # Handle form submission for editing the lesson
@@ -270,6 +274,50 @@ def suggest_lesson(student_id):
     previous_lessons=Lesson.query.filter_by(student_id=student.id).order_by(Lesson.lesson_date.desc()).all()
     suggestion = suggest_lessons_ollama(previous_lessons, student.general_notes)
     return suggestion
+
+@app.route('/reqs/sync-from-google-sheet')
+@login_required
+@admin_whitelist_check
+def sync_from_google_sheet():
+    lessons = Lesson.query.all()
+
+    # update student info
+    students_gsheet = get_student_info()
+    for name, info in students_gsheet.items():
+        student = Student.query.filter_by(name=name).first()
+        if student == None:
+            continue
+
+        for entry, data in info.items():
+            #assumes that entry is a member of class Student; and that gsheets is most updated
+            setattr(student, entry, data)
+
+    #update lesson info
+    lessons_gsheet = get_lesson_info()
+    for name, lesson_dict in lessons_gsheet.items():
+        student = Student.query.filter_by(name=name).first()        
+        if student == None:
+            continue
+
+
+        for date, info in lesson_dict.items():
+            existing = Lesson.query.filter(and_(Lesson.student_name==name, cast(Lesson.lesson_date, String)==f'"{date}"')).first()
+            if existing == None:
+                existing = Lesson(
+                    student_id=student.id,
+                    student_name=student.name,
+                    lesson_date=date,
+                    completed=True
+                )
+
+                db.session.add(existing)
+
+            for entry, data in info.items():
+                setattr(existing, entry, data)
+
+    db.session.commit()
+
+    return redirect(url_for('index'))
 
 if __name__ == '__main__':
     app.run(debug=True)
