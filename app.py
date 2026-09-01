@@ -9,8 +9,9 @@ from wtforms.validators import DataRequired, Email, Length, ValidationError
 from flask_bcrypt import Bcrypt
 from functools import wraps
 from lesson_suggestion import suggest_lessons_ollama
-from gsheet_interactor import get_lesson_info, get_student_info
+from gsheet_interactor import get_lesson_info, get_student_info, record_lesson_info
 from json import dumps
+import asyncio
 
 
 app = Flask(__name__)
@@ -199,6 +200,10 @@ def record_lesson(student_id):
         student.scheduled_lesson_ids = [lid for lid in student.scheduled_lesson_ids if lid != lesson.id]  # Remove the lesson ID from scheduled lessons
 
     db.session.commit()
+
+    async def record_gsheet():
+        record_lesson_info(student.name, lesson.lesson_date, lesson_duration, post_lesson_notes)
+    asyncio.run(record_lesson_info)
 
     return redirect(url_for('student_chart', student_id=student.id))
 
