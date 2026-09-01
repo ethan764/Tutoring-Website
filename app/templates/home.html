@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ethan's Math Tutoring</title>
+</head>
+<body>
+    <div class="nav">
+        <a class="nav-link" href="{{ url_for('students.index') }}">Tutoring Home</a><br>
+        <a class="nav-link" href="{{ url_for('auth.login') }}">Login</a><br>
+        <a class="nav-link" href="{{ url_for('auth.register') }}">Register</a><br>
+        <p class="nav-link">Contact:<br> <a href="mailto:ethan.nguyen.tutoring@gmail.com">ethan.nguyen.tutoring@gmail.com</a></p>
+        <hr><br>
+
+    </div>
+    <div class="content">
+    <h1>Welcome to Ethan's Math Tutoring!</h1>
+    <p>This is the home page for the tutoring program I run. If you are one of my students, <a href="{{ url_for('auth.login') }}">click here</a> to log in.
+    
+    If you are a prospective student, please <a href="mailto:ethan.nguyen.tutoring@gmail.com">contact me</a> to set up a trial lesson. 
+    You can see more information about myself and my policies on the About and Policies pages.
+    There is more general information below. I look forward to working with you!
+    </p>
+    <br><br><hr><br><br>
+
+    <h2>"My goal is to make myself unnecessary."</h2>
+    <p>(Information about my background is available on the About Me page.)<br>
+        My goal for every student is to help improve their problem solving skills. My core principles are:
+        <ul>
+            <li>Exercises v. Problems: Oftentimes, we relegate the idea of math to mere memerization of procedure. That is not to say these "exercises" of procedure aren't important; 
+                sometimes, it is good to know how to do something (like solve elementary derivatives) fast. However, math instruction should always culminate in being able to 
+                solve "problems", questions which are unfamiliar and require you to apply your knowledge in a new way. 
+                I'll try to make sure that we always conclude topical lessons by attacking genuine problems.
+            </li>
+            <li>Evaluation is key: Regular assessment helps track progress and identify areas for improvement. I'll provide problem-sets and review material so that you can assure
+                yourself that you are making progress.
+            </li>
+            <li>
+                Communication and Feedback: This is the other side of evalution. I will provide feedback on your work, and I expect you to do the same. Each session is a two-way street,
+                and to make sure you're getting the most out of each session, you should feel free to ask for clarification until you truly grasp the subject.
+            </li>
+        </ul>
+
+        As a tutor, I want my students to be better problem solvers. Mathematics can be difficult, but if you apply yourself, refrain from taking mental shortcuts, and
+        are willing to work hard, you can improve your math skills and become more independent in your learning (And, as a bonus, improve your scores and grades.).
+        One day, I hope each of my students will be able to walk into a difficult class and feel confident in their ability to understand new and challenging concepts on their own.
+    </p>
+    
+    <br><br><hr><br><br>
+    <h2>What I Offer</h2>
+
+    <h3>Subject Areas</h3>
+    <p>I am a math tutor. I can help you in the following subject areas:</p>
+    <ul>
+        <li>High School Math: Geometry, Algebra, Calculus, Statistics (Baisically, anything up to the equivalent of Calculus 2/Intro to Stats)</li>
+        <li>Standardized Tests: AP Calc AB/BC, AP Precalculus, SAT/ACT </li>
+        <li>Math Competitions: Contests of rigor up to and including AMC 10 (ie. MathCOUNTS, AMC 8, AMC 10)</li>
+    </ul>
+    <hr>
+    <h3>Type of Tutoring</h3>
+    <p>I offer in-person tutoring only in the summer for students who live nearby. If you're a resident of the Inland Empire/San Bernadino, Calif., I may be able to help you!<br>
+        I offer online tutoring year-round. Lessons are individual only. (I am going to try rolling out group lessons for SAT/ACT prep in the future. If you want more info, contact me and I'll keep you updated.)<br>
+    </p>
+    <hr>
+    <h3>Materials</h3>
+    <p>For some subjects, (SAT prep, AP Calculus), I have material that we can use to prepare directly.<br>
+        For other subjects, I rely on texts and other resources from 3rd parties. For transparency and your reference, I've listed them below:<br>
+        <ul>
+            <li>Introduction to Algebra, 2nd Ed., by Richard Rusczyk (2015)</li>
+            <li>Precalculus, 2nd Ed., by Richard Rusczyk (2009)</li>
+            <li>Calculus, Early Transcendentals 8th Ed., by James Stewart (2016)</li>
+            <li>The Art and Craft of Problem Solving, by Paul Zeitz (2007)</li>
+        </ul>
+
+    </p>
+    </div>
+</body>
+</html>

@@ -7,7 +7,7 @@
 </head>
 <body>
     <h1>Task Manager</h1>
-    <a href="{{url_for('index')}}">Back to Home</a>
+    <a href="{{ url_for('students.index') }}">Back to Home</a>
     <hr>
     <h2>Unplanned Lessons</h2>
     <ul>
@@ -19,7 +19,7 @@
     <h2>Students needing lesson planning</h2>
     <ul>
         {% for student in students %} 
-            <li><a href="{{ url_for('lesson_planner_create_lesson', student_id=student.id) }}">{{ student.name }}: {{ student.scheduled_lesson_ids | length }} lessons</a></li>
+            <li><a href="{{ url_for('lessons.lesson_planner_create_lesson', student_id=student.id) }}">{{ student.name }}: {{ student.scheduled_lesson_ids | length }} lessons</a></li>
         {% endfor %}
     </ul>
 </body>

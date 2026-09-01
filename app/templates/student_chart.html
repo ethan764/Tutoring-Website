@@ -7,7 +7,7 @@
 </head>
 <body>
     <h1>{{ student.name }}</h1>
-    <a href="{{ url_for('index') }}">Back to Student List</a>
+    <a href="{{ url_for('students.index') }}">Back to Student List</a>
     <hr>
     <ul class="studentinfo">
         <li>Lessons Completed: {{ student.lessons_taken }}</li>
@@ -17,7 +17,7 @@
     </ul>
     <hr>
     <h2>Update Student Information</h2>
-    <form action="/update_student/{{ student.id }}" method="post">
+    <form action="{{ url_for('students.update_student', student_id=student.id) }}" method="post">
         <label for="student-name">Name:</label><input type="text" id="student-name" name="name" value="{{ student.name }}">
         <label for="student-meeting-link">Google Meet Link:</label><input type="text" id="student-meeting-link" name="meeting_link" value="{{ student.meeting_link }}">
         <label for="student-schedule">Schedule (comma-separated):</label><input type="text" id="student-schedule" name="schedule" value="{{ student.schedule | join(', ') }}">
@@ -27,7 +27,7 @@
     <hr>
     <h2>Scheduled Lessons</h2>
         {% for lesson in scheduled_lessons %}
-        <p><a href="{{ url_for('lesson_planner_edit_lesson', student_id=student.id, lesson_id=lesson.id) }}">Edit Lesson on {{ lesson.lesson_date }}</a></p>
+        <p><a href="{{ url_for('lessons.lesson_planner_edit_lesson', student_id=student.id, lesson_id=lesson.id) }}">Edit Lesson on {{ lesson.lesson_date }}</a></p>
         <ul>
             <li>Lesson Date and Time: {{ lesson.lesson_date }}</li>
             <li>Notes: {{ lesson.lesson_notes }}</li>
@@ -37,7 +37,7 @@
         {% endfor %}
     <hr>
     <h2>Record Lesson</h2>
-    <form action="/record_lesson/{{ student.id }}" method="post">
+    <form action="{{ url_for('lessons.record_lesson', student_id=student.id) }}" method="post">
         <label for="which-lesson">Which Lesson:</label><select id="which-lesson" required name="lesson_id">
             {% for lesson in scheduled_lessons %}
                 <option value="{{ lesson.id }}">{{ lesson.lesson_date }}</option>
@@ -52,7 +52,7 @@
 
     {% for lesson in past_lessons %}
         <div class="lesson-history">
-            <h3><a href="{{ url_for('lesson_planner_edit_lesson', student_id=student.id, lesson_id=lesson.id) }}">[Edit]</a> Lesson of {{ lesson.lesson_date }}</h3>
+            <h3><a href="{{ url_for('lessons.lesson_planner_edit_lesson', student_id=student.id, lesson_id=lesson.id) }}">[Edit]</a> Lesson of {{ lesson.lesson_date }}</h3>
             <p>Duration: {{ lesson.lesson_duration }} hours</p>
             <p>Post-Lesson Notes: {{ lesson.post_lesson_notes }}</p>
             <p>Work: {{ lesson.lesson_work }}</p>

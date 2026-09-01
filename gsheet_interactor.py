@@ -3,7 +3,7 @@ from datetime import datetime, timezone
 from zoneinfo import ZoneInfo
 
 gc = service_account(filename="g_apikey.json") ###
-sh = gc.open("Lesson and Payment Record Spreadsheet")
+sh = gc.open("[[ ** REFORMAT WITH CAUTION ** ]] Lesson and Payment Record Spreadsheet")
 
 
 balance_sheet = sh.worksheet('balance')
