@@ -1,20 +1,6 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ethan's Math Tutoring</title>
-</head>
-<body>
-    <div class="nav">
-        <a class="nav-link" href="{{ url_for('students.index') }}">Tutoring Home</a><br>
-        <a class="nav-link" href="{{ url_for('auth.login') }}">Login</a><br>
-        <a class="nav-link" href="{{ url_for('auth.register') }}">Register</a><br>
-        <p class="nav-link">Contact:<br> <a href="mailto:ethan.nguyen.tutoring@gmail.com">ethan.nguyen.tutoring@gmail.com</a></p>
-        <hr><br>
-
-    </div>
-    <div class="content">
+{% extends "base.html" %}
+{% block title %}Home{% endblock %}
+{% block content %}
     <h1>Welcome to Ethan's Math Tutoring!</h1>
     <p>This is the home page for the tutoring program I run. If you are one of my students, <a href="{{ url_for('auth.login') }}">click here</a> to log in.
     
@@ -75,5 +61,4 @@
 
     </p>
     </div>
-</body>
-</html>
+{% endblock %}

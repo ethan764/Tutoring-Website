@@ -1,11 +1,6 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login</title>
-</head>
-<body>
+{% extends "base.html" %}
+{% block title %}Login{% endblock %}
+{% block content %}
     <form method="POST", action="">
         {{ form.hidden_tag() }}
         <h1>Login</h1>
@@ -16,4 +11,4 @@
     <label for="error">{{ error }}</label>
     <a href="{{ url_for('auth.register') }}">First time? Register</a>
 </body>
-</html>
+{% endblock %}

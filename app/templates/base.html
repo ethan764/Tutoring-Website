@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Header{% endblock %}</title>
+</head>
+<body>
+    <div class="nav">
+        <a class="nav-link" href="{{ url_for('students.index') }}">Tutoring Home</a><br>
+        <a class="nav-link" href="{{ url_for('auth.login') }}">Login</a><br>
+        <a class="nav-link" href="{{ url_for('auth.register') }}">Register</a><br>
+        <p class="nav-link">Contact:<br> <a href="mailto:ethan.nguyen.tutoring@gmail.com">ethan.nguyen.tutoring@gmail.com</a></p>
+        <hr><br>
+    </div>
+    <div class="content">
+        {% block content %}{% endblock %}
+    </div>
+</body>
