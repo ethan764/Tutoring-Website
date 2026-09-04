@@ -10,7 +10,12 @@
     <h1>Student List</h1>
     <a href="{{ url_for('lessons.task_manager') }}">Go to Task Manager</a><br>
     <a href="{{ url_for('auth.logout') }}">Logout</a><br>
-    <a href="{{ url_for('lessons.sync_from_google_sheet') }}">Sync FROM Google Sheets</a>
+    <a href="{{ url_for('lessons.sync_from_google_sheet') }}">Sync FROM Google Sheets</a><br>
+    <a href="{{ url_for('lessons.send_courtesy_emails') }}">Send Courtesy Emails</a>
+    <form action="{{ url_for('lessons.create_lessons_from_weekly_schedule') }}" method="post">
+        <input type="date" name="date_of_week" placeholder="Date of Week">
+        <button type="submit">Create Lessons from Weekly Schedule</button>
+    </form>
     <hr>
     <table>
         <thead>

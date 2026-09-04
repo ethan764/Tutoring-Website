@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Send Emails</title>
+</head>
+<body>
+    <h1>Send Courtesy Emails</h1>
+    <form action="{{ url_for('lessons.send_courtesy_emails') }}" method="post">
+        {% for lesson in scheduled_lessons %}
+            <div>
+                <p>Student: {{ lesson.student.name }}</p>
+                <p>Lesson Date: {{ lesson.lesson_date }}</p>
+                <p>Scheduled Time: {{ lesson.scheduled_time_pst }}</p>
+                <input type="checkbox" name="lesson_{{lesson.id}}" value='1'> Send Email
+            </div>
+            <hr>
+        {% endfor %}
+        <hr>
+        <label for="subject-format">Subject format</label><input type="text" id="subject-format" name="subject_format" placeholder="Courtesy Lessons Notification"><br>
+        <label for="body-format">Body format (fills in lesson list at '_lsns_', fills in name at '_name_')</label><textarea id="body-format" name="body_format">
+            Hello _name_,<br>
+            The following lessons are scheduled between you and Ethan:<br>
+            _lsns_<br><br>
+
+            If you cannot make a lesson scheduled above, please let me know. You can reply to this email or send me a message by other means.<br>
+            Regards,<br>
+            Ethan<br><br>
+
+            (This is an automated message. You can still reply to it, I'll respond.)
+
+        </textarea>
+        <hr>
+        <button type="submit">Send Courtesy Emails</button>
+    </form>
+</body>
+</html>

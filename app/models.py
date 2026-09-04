@@ -5,6 +5,7 @@ from app.extensions import db
 
 class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
+    student_id = db.Column(db.Integer, db.ForeignKey('student.id'), nullable=True)
     email = db.Column(db.String(150), unique=True, nullable=False)
     password_hashed = db.Column(db.String(150), nullable=False)
 
@@ -12,7 +13,7 @@ class Student(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
     parent_contact = db.Column(db.String(100), default='')
-    student_contact = db.Column(db.String(100), default='')
+    email = db.Column(db.String(100), default='') # NEW
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     lessons_taken = db.Column(db.Integer, default=0)
     lessons_credited = db.Column(db.Integer, default=0)
@@ -20,6 +21,7 @@ class Student(db.Model):
     general_notes = db.Column(db.String(200), default='')
     schedule = db.Column(db.JSON, default=[]) # Store schedule as a JSON array of strings
     meeting_link = db.Column(db.String(200), nullable=True)
+    stripe_customer_id = db.Column(db.String(100), nullable=True)  # NEW Store Stripe customer ID
 
     def __repr__(self):
         return f'<Student {self.name}, {self.id}, Scheduled Lessons: {self.scheduled_lesson_ids}>'
@@ -35,6 +37,8 @@ class Lesson(db.Model):
     completed = db.Column(db.Boolean, default=False)
     lesson_duration = db.Column(db.Integer, default = 0)  # Duration in hours
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    scheduled_time_pst = db.Column(db.String(50), default='') # NEWWWWW  # Store the scheduled time in PST as a string
 
     def __repr__(self):
         return f'<Lesson for Student ID {self.student_id}>'

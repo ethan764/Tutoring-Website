@@ -3,9 +3,37 @@
 {% block content %}
     <h1>Hello {{ student.name }}!</h1>
     <hr>
+    {% if len(scheduled_lessons) != 0 %}
     <h2>This week's lessons (lessons are scheduled at the beginning of each week)</h2>
+    <p>Note: If you need to reschedule a lesson, please contact Ethan directly. <a href="mailto:ethan@example.com">(email redirect)</a></p>
+    {% for lesson in scheduled_lessons %}
+        <div>
+            <p>Lesson ID: {{ lesson.id }}</p>
+            <p>Scheduled Date: {{ lesson.scheduled_date }}</p>
+            <p>Scheduled Time (PST): {{ lesson.scheduled_time_pst }}</p>
+            <p>Meeting Link: <a href="{{ lesson.meeting_link }}" target="_blank">{{ lesson.meeting_link }}</a></p>
+        </div>
+        <hr>
+    {% endfor %}
     <hr>
+    {% endif %}
     <h2>Payment Manager</h2>
+    <p>Pay for lessons below. Current lesson credits available: {{ student.lessons_credited - student.lessons_taken }}</p>
+    <form action="{{ url_for('payments.fetch_stripe', student_id=student.id, price_type='39 one-time') }}" method="GET">
+        <label for="quantity">Quantity:</label>
+        <input type="number" id="quantity" name="quantity" min="1" value="1">
+        <button type="submit">Redirect to checkout</button>
+    </form>
     <hr>
     <h2>Lesson History</h2>
+    {% for lesson in past_lessons %}
+        <div>
+            <p>Lesson ID: {{ lesson.id }}</p>
+            <p>Scheduled Date: {{ lesson.scheduled_date }}</p>
+            <p>Scheduled Time (PST): {{ lesson.scheduled_time_pst }}</p>
+            <p>Meeting Link: <a href="{{ lesson.meeting_link }}" target="_blank">{{ lesson.meeting_link }}</a></p>
+            <p>Post Lesson Notes: {{ lesson.post_lesson_notes }}</p>
+        </div>
+        <hr>
+    {% endfor %}
 {% endblock %}

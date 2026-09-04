@@ -26,7 +26,7 @@ def get_student_info():
 
 lessons_sheet = sh.worksheet('Lesson Record')
 sheets_date_format = "%m/%d/%Y"
-sheets_timestamp_format = "%m/%d/%Y %H/%M/%S"
+sheets_timestamp_format = "%m/%d/%Y %H:%M:%S"
 
 def get_lesson_info():
     information=lessons_sheet.get_all_records()
@@ -47,6 +47,12 @@ def get_lesson_info():
 def record_lesson_info(student_name, lesson_date, lesson_duration, post_lesson_notes):
     entries=len(lessons_sheet.col_values(1))
     timestamp = datetime.now(ZoneInfo("America/Los_Angeles")).strftime(sheets_timestamp_format)
-    lessons_sheet.update([timestamp, student_name, datetime.strptime(lesson_date, "%Y-%m-%d").strftime(sheets_date_format), 
-                          lesson_duration, post_lesson_notes], f"A{entries+1}:E{entries+1}")
-    
+    lessons_sheet.update([[timestamp, student_name, datetime.strptime(lesson_date, "%Y-%m-%d").strftime(sheets_date_format), 
+                          lesson_duration, post_lesson_notes]], f"A{entries+1}:E{entries+1}")
+
+payments_sheet = sh.worksheet('Payment Record')
+
+def record_payment_info(student_name, payment_sum, hours_quantity):
+    entries=len(payments_sheet.col_values(1))
+    timestamp = datetime.now(ZoneInfo("America/Los_Angeles")).strftime(sheets_timestamp_format)
+    payments_sheet.update([[timestamp, student_name, payment_sum, hours_quantity]], f"A{entries+1}:D{entries+1}")

@@ -1,13 +1,28 @@
 from flask import Blueprint, render_template, request, redirect, url_for
-from flask_login import login_required
+from flask_login import current_user, login_required
 
 from app.decorators import admin_whitelist_check
 from app.extensions import db
-from app.models import Student, Lesson
+from app.models import Student, Lesson, User
 
 
 students_bp = Blueprint("students", __name__)
 
+# ------- Student Routes -------
+@students_bp.route('/student_portal')
+@login_required
+def student_portal():
+
+    student = Student.query.get(current_user.student_id)
+    if student is None:
+        return "Thank you for making an account. Please contact Ethan to be added to the student list and gain access to the student portal."
+
+    student_scheduled_lessons = Lesson.query.filter_by(student_id=student.id, completed=False).all()
+    student_past_lessons = Lesson.query.filter_by(student_id=student.id, completed=True).order_by(Lesson.lesson_date.desc()).all()
+    return render_template('student_portal.html', student=student, scheduled_lessons=student_scheduled_lessons, past_lessons=student_past_lessons)
+
+
+# ------- Admin Routes -------
 
 @students_bp.route('/')
 @login_required

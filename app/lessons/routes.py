@@ -1,3 +1,5 @@
+import datetime
+
 from flask import Blueprint, render_template, request, redirect, url_for
 from sqlalchemy import and_, cast, String
 from flask_login import login_required
@@ -156,3 +158,71 @@ def sync_from_google_sheet():
     db.session.commit()
 
     return redirect(url_for('students.index'))
+
+def convert_day_week_year_to_date(day_of_week, week_of_year, year):
+    days_of_week = {
+        'monday': 1, "mon" : 1, "m" : 1,
+        'tuesday': 2, "tue" : 2, "t" : 2,
+        'wednesday': 3, "wed" : 3, "w" : 3,
+        'thursday': 4, "thu" : 4, "th" : 4,
+        'friday': 5, "fri" : 5, "f" : 5,
+        'saturday': 6, "sat" : 6, "sa" : 6,
+        'sunday': 7, "sun" : 7, "su" : 7
+    }
+
+    # validate inputs
+    if not (day_of_week.lower() in days_of_week and 1 <= week_of_year <= 53 and year >= 1):
+        return None  # Invalid day of the week
+
+    return datetime.fromisocalendar(year, week_of_year, days_of_week[day_of_week.lower()]).date()
+
+@lessons_bp.route('/reqs/create-lessons-from-weekly-schedule', methods=['POST'])
+@login_required
+@admin_whitelist_check
+def create_lessons_from_weekly_schedule():
+    date_of_week = request.form.get('date_of_week')
+    if not date_of_week:
+        return "Date of week is required", 400
+
+    year, week_of_year, _ = datetime.fromisoformat(date_of_week).isocalendar()
+    
+    students = Student.query.filter(Student.schedule != []).all()
+
+    for student in students:
+        # scheduled_time is in format "(M/T/W/Th/F/Sa/Su) H(AM/PM)"; only date is necessary to extract from schedule, time is fine as string.
+        for scheduled_time in student.schedule:
+            day_of_week, informal_time = scheduled_time.split(' ', 1)
+            lesson_date = convert_day_week_year_to_date(day_of_week, week_of_year, year)
+            if lesson_date is None:
+                continue  # Skip invalid entries
+
+            # Check if a lesson already exists for this student and scheduled time
+            lesson = Lesson.query.filter_by(student_id=student.id, scheduled_time_pst=scheduled_time).first()
+            if lesson is None:
+                lesson = Lesson(
+                    student_id=student.id,
+                    student_name=student.name,
+                    completed=False
+                )
+                db.session.add(lesson)
+            lesson.lesson_date = lesson_date
+            lesson.scheduled_time_pst = informal_time
+
+    db.session.commit()
+
+    return redirect(url_for('students.index'))
+
+@lessons_bp.route('/reqs/send-courtesy-emails', methods=['POST'])
+@login_required
+@admin_whitelist_check
+def send_courtesy_emails():
+
+    if request.method == 'POST':
+        subject = request.form.get('subject_format')
+        body = request.form.get('body_format') # '_lsns_' means fill in lesson list; '_name_' means fill in name
+
+        # TODO
+
+
+    scheduled_lessons = Lesson.query.filter_by(completed=False).filter(Lesson.lesson_date >= datetime.date.today()).order_by(Lesson.lesson_date).all()
+    return render_template('email_send.html', scheduled_lessons=scheduled_lessons)
