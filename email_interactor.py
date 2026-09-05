@@ -2,8 +2,21 @@ import os
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
+from email_validator import validate_email, EmailNotValidError
 
-def send_email(to_email, subject, body):
+def validate_email(to_email):
+    try:
+        # Validate and get normalized form
+        valid = validate_email(to_email)
+        return True, valid.normalized
+    except EmailNotValidError as e:
+        return False, str(e)
+
+def send_email(to_email, subject, body, use_html=False):
+    if validate_email(to_email) == False:
+        print("Invalid email: " + to_email)
+        return
+    
     from_email = 'ethan.nguyen.tutoring@gmail.com'
     email_password = os.environ.get('GMAIL_TUTORING_APP_PASSWORD')
 
@@ -12,7 +25,7 @@ def send_email(to_email, subject, body):
     msg['To'] = to_email
     msg['Subject'] = subject
 
-    msg.attach(MIMEText(body, 'plain'))
+    msg.attach(MIMEText(body, 'html' if use_html == True else 'plain'))
 
     try:
         with smtplib.SMTP('smtp.gmail.com', 587) as server:

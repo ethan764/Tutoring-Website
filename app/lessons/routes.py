@@ -10,6 +10,7 @@ from app.extensions import db
 from app.models import Student, Lesson
 from gsheet_interactor import get_lesson_info, get_student_info, record_lesson_info
 from lesson_suggestion import suggest_lessons_ollama
+from email_interactor import send_email
 
 lessons_bp = Blueprint("lessons", __name__)
 
@@ -218,11 +219,38 @@ def create_lessons_from_weekly_schedule():
 def send_courtesy_emails():
 
     if request.method == 'POST':
+        scheduled_lesson_ids = request.form.getlist('scheduled_lesson_ids')
         subject = request.form.get('subject_format')
         body = request.form.get('body_format') # '_lsns_' means fill in lesson list; '_name_' means fill in name
 
-        # TODO
+        # iterates through all lessons, sorting by student
+        student_to_lessons = {}
+        while len(scheduled_lesson_ids) > 0:
+            lesson = Lesson.query.get(scheduled_lesson_ids[0])
+            if lesson != None:
+                if student_to_lessons[lesson.student_id] == None:
+                    student_to_lessons[lesson.student_id] = []
 
+                student_to_lessons[lesson.student_id].append(lesson)
+
+            scheduled_lesson_ids.pop(0)
+
+        # emails by student
+        for student_id, lessons in student_to_lessons.items():
+            student = Student.query.get(student_id)
+            if student == None:
+                continue
+
+            lesson_info_str = []
+            for lesson in lessons:
+                lesson_info_str.append(f'- Lesson on {lesson.lesson_date} at {lesson.scheduled_time_pst} (Pacific Time, PST)\n')
+            lesson_info_str = "".join(lesson_info_str)
+
+            body_exact = body.replace('_name_', student.name).replace('_lsns_', lesson_info_str)
+            send_email(student.email, subject, body_exact)
+
+        return "Success"
+            
 
     scheduled_lessons = Lesson.query.filter_by(completed=False).filter(Lesson.lesson_date >= datetime.date.today()).order_by(Lesson.lesson_date).all()
     return render_template('email_send.html', scheduled_lessons=scheduled_lessons)

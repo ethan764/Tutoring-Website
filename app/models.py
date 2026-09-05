@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from flask_login import UserMixin
 from app.extensions import db
 
@@ -8,6 +8,9 @@ class User(db.Model, UserMixin):
     student_id = db.Column(db.Integer, db.ForeignKey('student.id'), nullable=True)
     email = db.Column(db.String(150), unique=True, nullable=False)
     password_hashed = db.Column(db.String(150), nullable=False)
+    link_code_hashed = db.Column(db.String(150), nullable=False)
+    verified = db.Column(db.Boolean, default=False)
+    unverified_dispose_after = db.Column(db.Integer, default=datetime.utcnow + timedelta(hours=24)) # treat this user as nonexistent after 24 hours
 
 class Student(db.Model):
     id = db.Column(db.Integer, primary_key=True)

@@ -13,7 +13,7 @@
                 <p>Student: {{ lesson.student.name }}</p>
                 <p>Lesson Date: {{ lesson.lesson_date }}</p>
                 <p>Scheduled Time: {{ lesson.scheduled_time_pst }}</p>
-                <input type="checkbox" name="lesson_{{lesson.id}}" value='1'> Send Email
+                <input type="checkbox" name="scheduled_lesson_ids" value='{{lesson.id}}'> Send Email
             </div>
             <hr>
         {% endfor %}

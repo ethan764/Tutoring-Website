@@ -24,6 +24,7 @@ def student_portal():
 
 # ------- Admin Routes -------
 
+
 @students_bp.route('/')
 @login_required
 @admin_whitelist_check
