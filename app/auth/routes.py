@@ -2,6 +2,7 @@ from flask import Blueprint, redirect, render_template, url_for
 from flask_login import login_user, logout_user, login_required
 from secrets import token_urlsafe
 from email_interactor import send_email, validate_email
+from datetime import datetime
 import os
 
 from app.extensions import bcrypt, db
@@ -17,6 +18,9 @@ def login():
     form = LoginForm()
     if form.validate_on_submit():
         user = User.query.filter_by(email=form.email.data).first()
+        if user.verified == False:
+            return render_template('login.html', form=form, title='Login', error='The account has not been verified.')
+
         if user and bcrypt.check_password_hash(user.password_hashed, form.password.data):
             login_user(user)
             return redirect(url_for('students.index'))
@@ -66,7 +70,17 @@ def register():
 
 @auth_bp.route('/verify-email/<int:user_id>/<str:email_verification_code')
 def verify_email(user_id, email_verification_code):
-    pass
+    user = User.get(user_id)
+    if user is None:
+        return "Invalid Link: User not found"
+    if user.unverified_dispose_after > datetime.utcnow:
+        return "The link as expired. Please register again."
+    if user.verified == True:
+        return "User is already verified."
+
+    if bcrypt.check_password_hash(user.link_code_hashed, email_verification_code):
+        user.verified = True
+        return "The verification code has been accepted. Account has been verified."
 
 @auth_bp.route('/logout')
 @login_required
