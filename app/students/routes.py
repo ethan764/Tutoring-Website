@@ -50,6 +50,14 @@ def update_student(student_id):
     student.meeting_link = request.form.get('meeting_link')
     student.schedule = request.form.get('schedule').split(', ')
     student.general_notes = request.form.get('general_notes')
+    student.email = request.form.get('email')
+
+    db.session.commit()
+
+    user_associated_email = User.query.filter_by(email=student.email).first()
+    if user_associated_email:
+        user_associated_email.student_id = student.id
+
     db.session.commit()
     return redirect(url_for('students.student_chart', student_id=student.id))
 

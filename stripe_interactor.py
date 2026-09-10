@@ -1,7 +1,7 @@
 import stripe
 import os
 
-stripe.api_key = os.environ("STRIPE_API_KEY")
+stripe.api_key = os.environ.get("STRIPE_API_KEY")
 
 hour_credit_product_id = "prod_VBgX7NNBinixKI"
 price_id_dict = {

@@ -11,7 +11,7 @@
     <p id="suggestor">Pending...</p>
 
     <script>
-        fetch('/reqs/lesson-suggestion/{{ student.id }}').then(r => r.text()).then(data=>{
+        fetch('/lessons/reqs/lesson-suggestion/{{ student.id }}').then(r => r.text()).then(data=>{
             document.getElementById('suggestor').innerText = data
         }).catch(error =>{
             document.getElementById('suggestor').innerText = "Could not load: " + error.data.text
@@ -27,14 +27,16 @@
         <label for="lesson-date">Lesson Date:</label><input type="date" id="lesson-date" name="lesson_date">
         <label for="lesson-homework">Homework:</label><textarea type="text" id="lesson-homework" name="lesson_homework"></textarea>
         <label for="lesson-notes">Pre-Lesson Notes:</label><textarea type="text" id="lesson-notes" name="lesson_notes"></textarea>
+        <label for="lesson-time-pst">Scheduled time (PST):</label><input type="text" id="lesson-time-pst" name="lesson_time">
         
         <button type="submit">Submit</button>
     </form>
     {% else %}
     <form id="lesson-form" action="{{ url_for('lessons.lesson_planner_edit_lesson', student_id=student.id, lesson_id=lesson.id) }}" method="post">
         <label for="lesson-date">Lesson Date:</label><input type="date" id="lesson-date" name="lesson_date" value="{{ lesson.lesson_date }}">
-        <label for="lesson-homework">Homework:</label><textarea type="text" id="lesson-homework" name="lesson_homework">{{ lesson.lesson_homework }}</textarea>
+        <label for="lesson-homework">Homework:</label><textarea type="text" id="lesson-homework" name="lesson_homework">{{ lesson.lesson_work }}</textarea>
         <label for="lesson-notes">Pre-Lesson Notes:</label><textarea type="text" id="lesson-notes" name="lesson_notes">{{ lesson.lesson_notes }}</textarea>
+        <label for="lesson-time-pst">Scheduled time (PST):</label><input type="text" id="lesson-time-pst" name="lesson_time" value="{{ lesson.scheduled_time_pst}}">
         <button type="submit">Update</button>
     </form>
     {% endif %}

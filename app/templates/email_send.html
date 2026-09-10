@@ -10,16 +10,16 @@
     <form action="{{ url_for('lessons.send_courtesy_emails') }}" method="post">
         {% for lesson in scheduled_lessons %}
             <div>
-                <p>Student: {{ lesson.student.name }}</p>
-                <p>Lesson Date: {{ lesson.lesson_date }}</p>
-                <p>Scheduled Time: {{ lesson.scheduled_time_pst }}</p>
-                <input type="checkbox" name="scheduled_lesson_ids" value='{{lesson.id}}'> Send Email
+                <p>Student: {{ lesson.student_name }} ||
+                Lesson Date: {{ lesson.lesson_date }} ||
+                Scheduled Time: {{ lesson.scheduled_time_pst }} ||
+                <input type="checkbox" name="scheduled_lesson_ids" value='{{lesson.id}}'> Send Email</p>
             </div>
             <hr>
         {% endfor %}
         <hr>
         <label for="subject-format">Subject format</label><input type="text" id="subject-format" name="subject_format" placeholder="Courtesy Lessons Notification"><br>
-        <label for="body-format">Body format (fills in lesson list at '_lsns_', fills in name at '_name_')</label><textarea id="body-format" name="body_format">
+        <label for="body-format">Body format (fills in lesson list at '_lsns_', fills in name at '_name_')</label><br><textarea id="body-format" name="body_format">
             Hello _name_,<br>
             The following lessons are scheduled between you and Ethan:<br>
             _lsns_<br><br>

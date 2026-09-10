@@ -22,6 +22,7 @@
         <label for="student-meeting-link">Google Meet Link:</label><input type="text" id="student-meeting-link" name="meeting_link" value="{{ student.meeting_link }}">
         <label for="student-schedule">Schedule (comma-separated):</label><input type="text" id="student-schedule" name="schedule" value="{{ student.schedule | join(', ') }}">
         <label for="student-general-notes">General Notes:</label><textarea id="student-general-notes" name="general_notes">{{ student.general_notes }}</textarea>
+        <label for="student-email">Email:</label><input type="text" id="email" name="email" value="{{ student.email }}">
         <button type="submit">Update</button>
     </form>
     <hr>

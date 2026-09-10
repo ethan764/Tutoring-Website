@@ -20,9 +20,13 @@ def create_app():
     from app.auth.routes import auth_bp
     from app.students.routes import students_bp
     from app.lessons.routes import lessons_bp
+    from app.payments.routes import payments_by
+    from app.static.routes import static_bp
 
     app.register_blueprint(auth_bp, url_prefix='/auth')
     app.register_blueprint(students_bp, url_prefix='/students')
     app.register_blueprint(lessons_bp, url_prefix='/lessons')
+    app.register_blueprint(payments_by, url_prefix='/payments')
+    app.register_blueprint(static_bp, url_prefix="/")
 
     return app

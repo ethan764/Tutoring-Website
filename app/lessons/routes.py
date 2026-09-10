@@ -1,4 +1,4 @@
-import datetime
+from datetime import date, datetime
 
 from flask import Blueprint, render_template, request, redirect, url_for
 from sqlalchemy import and_, cast, String
@@ -51,6 +51,7 @@ def lesson_planner_create_lesson(student_id):
         lesson_date = request.form.get('lesson_date')
         lesson_homework = request.form.get('lesson_homework')
         lesson_notes = request.form.get('lesson_notes')
+        lesson_time = request.form.get('lesson_time')
 
         # Create a new Lesson object
         new_lesson = Lesson(
@@ -59,6 +60,7 @@ def lesson_planner_create_lesson(student_id):
             lesson_date=lesson_date,
             lesson_notes=lesson_notes,
             lesson_work= lesson_homework,
+            scheduled_time_pst=lesson_time,
             completed=False
         )
         db.session.add(new_lesson)
@@ -84,6 +86,7 @@ def lesson_planner_edit_lesson(student_id, lesson_id):
         lesson.lesson_date = request.form.get('lesson_date')
         lesson.lesson_notes = request.form.get('lesson_notes')
         lesson.lesson_work = request.form.get('lesson_homework')
+        lesson.scheduled_time_pst = request.form.get('lesson_time')
         db.session.commit()
 
         return redirect(url_for('students.student_chart', student_id=student.id))
@@ -213,7 +216,7 @@ def create_lessons_from_weekly_schedule():
 
     return redirect(url_for('students.index'))
 
-@lessons_bp.route('/reqs/send-courtesy-emails', methods=['POST'])
+@lessons_bp.route('/reqs/send-courtesy-emails', methods=['GET','POST'])
 @login_required
 @admin_whitelist_check
 def send_courtesy_emails():
@@ -228,7 +231,7 @@ def send_courtesy_emails():
         while len(scheduled_lesson_ids) > 0:
             lesson = Lesson.query.get(scheduled_lesson_ids[0])
             if lesson != None:
-                if student_to_lessons[lesson.student_id] == None:
+                if lesson.student_id not in student_to_lessons:
                     student_to_lessons[lesson.student_id] = []
 
                 student_to_lessons[lesson.student_id].append(lesson)
@@ -243,14 +246,15 @@ def send_courtesy_emails():
 
             lesson_info_str = []
             for lesson in lessons:
+                
                 lesson_info_str.append(f'- Lesson on {lesson.lesson_date} at {lesson.scheduled_time_pst} (Pacific Time, PST)\n')
             lesson_info_str = "".join(lesson_info_str)
 
             body_exact = body.replace('_name_', student.name).replace('_lsns_', lesson_info_str)
-            send_email(student.email, subject, body_exact)
+            send_email(student.email, subject, body_exact, use_html=True)
 
         return "Success"
             
 
-    scheduled_lessons = Lesson.query.filter_by(completed=False).filter(Lesson.lesson_date >= datetime.date.today()).order_by(Lesson.lesson_date).all()
+    scheduled_lessons = Lesson.query.filter_by(completed=False).order_by(Lesson.lesson_date).all()
     return render_template('email_send.html', scheduled_lessons=scheduled_lessons)

@@ -7,7 +7,7 @@ from stripe_interactor import create_checkout_session, create_customer
 
 payments_by = Blueprint("payments", __name__)
 
-@payments_by.route("/payments/fetch_stripe/<student_id>/<price_type>", methods=["GET"])
+@payments_by.route("/payments/fetch_stripe/<student_id>/<price_type>", methods=["POST"])
 @login_required
 def fetch_stripe(student_id, price_type):
     student = Student.query.get_or_404(student_id)
@@ -19,7 +19,8 @@ def fetch_stripe(student_id, price_type):
         db.session.commit()
         customer_id = customer.id
 
-    session = create_checkout_session(customer_id, price_type, int(request.args.get('quantity', 1)), url_for('payments.success', _external=True), url_for('payments.cancel', _external=True))
+    quantity = int(request.form.get('quantity', request.args.get('quantity', 1)))
+    session = create_checkout_session(customer_id, price_type, quantity, url_for('payments.success', _external=True), url_for('payments.cancel', _external=True))
     return redirect(session.url)
 
 @payments_by.route("/payments/success")
@@ -31,3 +32,4 @@ def success():
 @login_required
 def cancel():
     return "Payment canceled. Please try again." # create html later
+

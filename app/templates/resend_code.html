@@ -3,12 +3,10 @@
 {% block content %}
     <form method="POST">
         {{ form.hidden_tag() }}
-        <h1>Register</h1>
+        <h1>Resend Code</h1>
         <label for="email">Email:</label>{{ form.email }}
-        <label for="password">Password:</label>{{ form.password }}
-        <label for="confirm_password">Confirm Password:</label>{{ form.confirm_password}}
         {{ form.submit }}
     </form><br>
+    
     <label for="error">{{ error }}</label>
-    <a href="{{url_for('auth.resend_code')}}">Resend Code</a>
 {% endblock %}

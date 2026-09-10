@@ -52,6 +52,10 @@ def record_lesson_info(student_name, lesson_date, lesson_duration, post_lesson_n
 
 payments_sheet = sh.worksheet('Payment Record')
 
+def get_payment_info():
+    information=payments_sheet.get_all_records()
+    pass #TODO
+
 def record_payment_info(student_name, payment_sum, hours_quantity):
     entries=len(payments_sheet.col_values(1))
     timestamp = datetime.now(ZoneInfo("America/Los_Angeles")).strftime(sheets_timestamp_format)
