@@ -54,7 +54,19 @@ payments_sheet = sh.worksheet('Payment Record')
 
 def get_payment_info():
     information=payments_sheet.get_all_records()
-    pass #TODO
+    payments_info = {}
+
+    for payment in information:
+        payments_info.setdefault(payment['Student'], [])
+        payments_info[payment['Student']].append(
+            {
+                'Timestamp' : payment['Timestamp'],
+                'Sum of Payment' : payment['Sum of payment'],
+                'Lessons Credited' : payment['Lessons Credited']
+            }
+        )
+
+    return payments_info
 
 def record_payment_info(student_name, payment_sum, hours_quantity):
     entries=len(payments_sheet.col_values(1))

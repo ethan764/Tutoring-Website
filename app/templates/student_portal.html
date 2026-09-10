@@ -18,12 +18,8 @@
     <hr>
     {% endif %}
     <h2>Payment Manager</h2>
-    <p>Pay for lessons below. Current lesson credits available: {{ student.lessons_credited - student.lessons_taken }}</p>
-    <form action="{{ url_for('payments.fetch_stripe', student_id=student.id, price_type='39 one-time') }}" method="post">
-        <label for="quantity">Quantity:</label>
-        <input type="number" id="quantity" name="quantity" min="1" value="1">
-        <button type="submit">Redirect to checkout</button>
-    </form>
+    <p>Pay for lessons or check past payments in our payments portal:
+        <a href="{{ url_for('payments.portal') }}">Payments portal</a></p>
     <hr>
     <h2>Lesson History</h2>
     {% for lesson in past_lessons %}

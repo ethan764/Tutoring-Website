@@ -18,6 +18,20 @@ def create_customer(student_name, email):
     )
     return customer
 
+def find_subscriptions(customer_id):
+    subscriptions = stripe.Subscription.list(
+        customer=customer_id,
+        status="active"
+    )
+
+    return subscriptions
+
+# cancels all of a customer's subscriptions immediately
+def cancel_subscriptions(customer_id):
+    subscriptions = find_subscriptions(customer_id)
+    for subscription in subscriptions:
+        stripe.Subscription.delete(subscription.id)
+
 def create_checkout_session(customer_id, price_type, quantity, success_url, cancel_url):
     session = stripe.checkout.Session.create(
         customer=customer_id,

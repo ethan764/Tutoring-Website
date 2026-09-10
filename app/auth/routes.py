@@ -26,7 +26,7 @@ def login():
 
         if user and bcrypt.check_password_hash(user.password_hashed, form.password.data):
             login_user(user)
-            return redirect(url_for('students.index'))
+            return redirect(url_for('students.student_portal'))
         else:
             return render_template('login.html', form=form, title='Login', error='Invalid email or password.')
     return render_template('login.html', form=form, title='Login')
