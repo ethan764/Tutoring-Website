@@ -54,6 +54,11 @@ def update_student(student_id):
 
     db.session.commit()
 
+    # remove all other associations
+    previous_associated_users = User.query.filter_by(student_id=student.id).all()
+    for user in previous_associated_users:
+        user.student_id = None
+
     user_associated_email = User.query.filter_by(email=student.email).first()
     if user_associated_email:
         user_associated_email.student_id = student.id

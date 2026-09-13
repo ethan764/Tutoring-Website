@@ -9,7 +9,6 @@
     <p>Note: If you need to reschedule a lesson, please contact Ethan directly.</p>
     {% for lesson in scheduled_lessons %}
         <div>
-            <p>Lesson ID: {{ lesson.id }}</p>
             <p>Scheduled Date: {{ lesson.lesson_date }}</p>
             <p>Scheduled Time (PST): {{ lesson.scheduled_time_pst }}</p>
             <p>Meeting Link: <a href="{{ student.meeting_link }}" target="_blank">{{ lesson.meeting_link }}</a></p>
@@ -31,11 +30,8 @@
     <h2>Lesson History</h2>
     {% for lesson in past_lessons %}
         <div>
-            <p>Lesson ID: {{ lesson.id }}</p>
-            <p>Scheduled Date: {{ lesson.scheduled_date }}</p>
-            <p>Scheduled Time (PST): {{ lesson.scheduled_time_pst }}</p>
-            <p>Meeting Link: <a href="{{ lesson.meeting_link }}" target="_blank">{{ lesson.meeting_link }}</a></p>
-            <p>Post Lesson Notes: {{ lesson.post_lesson_notes }}</p>
+            <p>Scheduled Date: {{ lesson.lesson_date }}</p>
+            <p>Lesson Notes: {{ lesson.post_lesson_notes }}</p>
         </div>
         <hr>
     {% endfor %}
