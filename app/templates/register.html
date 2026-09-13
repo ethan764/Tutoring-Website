@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 {% block title %}Register{% endblock %}
 {% block content %}
+<div class="sec1">
     <form method="POST">
         {{ form.hidden_tag() }}
         <h1>Register</h1>
@@ -11,4 +12,5 @@
     </form><br>
     <label for="error">{{ error }}</label>
     <a href="{{url_for('auth.resend_code')}}">Resend Code</a>
+</div>
 {% endblock %}

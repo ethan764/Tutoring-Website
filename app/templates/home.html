@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 {% block title %}Home{% endblock %}
 {% block content %}
+<div class="sec1">
     <h1>Welcome to Ethan's Math Tutoring!</h1>
     <p>This is the home page for the tutoring program I run. If you are one of my students, <a href="{{ url_for('auth.login') }}">click here</a> to log in.
     
@@ -8,8 +9,9 @@
     You can see more information about myself and my policies on the About and Policies pages.
     There is more general information below. I look forward to working with you!
     </p>
-    <br><br><hr><br><br>
+</div>
 
+<div class="sec2">
     <h2>"My goal is to make myself unnecessary."</h2>
     <p>(Information about my background is available on the About Me page.)<br>
         My goal for every student is to help improve their problem solving skills. My core principles are:
@@ -32,8 +34,9 @@
         are willing to work hard, you can improve your math skills and become more independent in your learning (And, as a bonus, improve your scores and grades.).
         One day, I hope each of my students will be able to walk into a difficult class and feel confident in their ability to understand new and challenging concepts on their own.
     </p>
-    
-    <br><br><hr><br><br>
+</div>
+
+<div class="sec3">
     <h2>What I Offer</h2>
 
     <h3>Subject Areas</h3>
@@ -60,5 +63,5 @@
         </ul>
 
     </p>
-    </div>
+</div>
 {% endblock %}
