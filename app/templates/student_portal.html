@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 {% block title %}Student Portal{% endblock %}
 {% block content %}
+<div class="sec1">
     <h1>Hello {{ student.name }}!</h1>
     <hr>
     {% if scheduled_lessons | length != 0 %}
@@ -17,10 +18,16 @@
     {% endfor %}
     <hr>
     {% endif %}
+</div>
+
+<div class="sec2">
     <h2>Payment Manager</h2>
     <p>Pay for lessons or check past payments in our payments portal:
         <a href="{{ url_for('payments.portal') }}">Payments portal</a></p>
     <hr>
+</div>
+
+<div class="sec3">
     <h2>Lesson History</h2>
     {% for lesson in past_lessons %}
         <div>
@@ -32,4 +39,5 @@
         </div>
         <hr>
     {% endfor %}
+</div>
 {% endblock %}

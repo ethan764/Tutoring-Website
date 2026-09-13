@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 {% block title %}Login{% endblock %}
 {% block content %}
+<div class="sec1">
     <form method="POST", action="">
         {{ form.hidden_tag() }}
         <h1>Login</h1>
@@ -10,5 +11,5 @@
     </form>
     <label for="error">{{ error }}</label>
     <a href="{{ url_for('auth.register') }}">First time? Register</a>
-</body>
+</div>
 {% endblock %}
