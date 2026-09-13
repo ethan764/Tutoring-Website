@@ -1,13 +1,15 @@
 {% extends "base.html" %}
 {% block title %}Home{% endblock %}
 {% block content %}
-    <h1>Welcome to Ethan's Math Tutoring!</h1>
-    <p>This is the home page for the tutoring program I run. If you are one of my students, <a href="{{ url_for('auth.login') }}">click here</a> to log in.
-    
-    If you are a prospective student, please <a href="mailto:ethan.nguyen.tutoring@gmail.com">contact me</a> to set up a trial lesson. 
-    You can see more information about myself and my policies on the About and Policies pages.
-    There is more general information below. I look forward to working with you!
-    </p>
+    <div class="sec1">
+        <h1>Welcome to Ethan's Math Tutoring!</h1>
+        <p>This is the home page for the tutoring program I run. If you are one of my students, <a href="{{ url_for('auth.login') }}">click here</a> to log in.
+        
+        If you are a prospective student, please <a href="mailto:ethan.nguyen.tutoring@gmail.com">contact me</a> to set up a trial lesson. 
+        You can see more information about myself and my policies on the About and Policies pages.
+        There is more general information below. I look forward to working with you!
+        </p>
+    </div>
     <br><br><hr><br><br>
 
     <h2>"My goal is to make myself unnecessary."</h2>
