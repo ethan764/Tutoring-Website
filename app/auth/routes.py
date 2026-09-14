@@ -97,7 +97,6 @@ def verify_email(user_id, email_verification_code):
         return "The verification code has been accepted. Account has been verified."
 
 @auth_bp.route('/resend-code', methods=['GET', 'POST'])
-@login_required
 def resend_code():
     form = ResendCodeForm()
     if form.validate_on_submit():
