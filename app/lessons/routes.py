@@ -79,7 +79,6 @@ def lesson_planner_create_lesson(student_id):
 def lesson_planner_edit_lesson(student_id, lesson_id):
     student = Student.query.get_or_404(student_id)
     lesson = Lesson.query.get_or_404(lesson_id)
-    print(lesson.lesson_date)
 
     if request.method == 'POST':
         # Handle form submission for editing the lesson
@@ -104,7 +103,6 @@ def task_manager():
 
     # Sort students by the number of scheduled lessons in descending order
     students.sort(key=lambda s: len(s.scheduled_lesson_ids), reverse=False)
-    print(students)
 
     return render_template('task manager.html', students=students, unplanned_lessons=unplanned_lessons)
 
@@ -144,13 +142,13 @@ def sync_from_google_sheet():
             continue
 
 
-        for date, info in lesson_dict.items():
-            existing = Lesson.query.filter(and_(Lesson.student_name==name, cast(Lesson.lesson_date, String)==f'"{date}"')).first()
+        for date_, info in lesson_dict.items():
+            existing = Lesson.query.filter(and_(Lesson.student_name==name, cast(Lesson.lesson_date, String)==f'"{date_}"')).first()
             if existing == None:
                 existing = Lesson(
                     student_id=student.id,
                     student_name=student.name,
-                    lesson_date=date,
+                    lesson_date=date_,
                     completed=True
                 )
 
