@@ -184,7 +184,7 @@ def convert_day_week_year_to_date(day_of_week, week_of_year, year):
 def create_lessons_from_weekly_schedule():
     date_of_week = request.form.get('date_of_week')
     if not date_of_week:
-        return "Date of week is required", 400
+        return redirect(url_for('static.message', message="Date of week is required")), 400
 
     year, week_of_year, _ = datetime.fromisoformat(date_of_week).isocalendar()
     
@@ -251,7 +251,7 @@ def send_courtesy_emails():
             body_exact = body.replace('_name_', student.name).replace('_lsns_', lesson_info_str)
             send_email(student.email, subject, body_exact, use_html=True)
 
-        return "Success"
+        return redirect(url_for('static.message', message="Success"))
             
 
     scheduled_lessons = Lesson.query.filter_by(completed=False).order_by(Lesson.lesson_date).all()

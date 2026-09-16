@@ -25,11 +25,11 @@ def portal():
 def fetch_stripe(student_id, price_type):
     # this type of auth should be a wrapper?
     if current_user.student_id != student_id:
-        return "Invalid Authentication."
+        return redirect(url_for('static.message', message="Invalid Authentication."))
 
     student = Student.query.get(student_id)
     if student is None:
-        return "No student found."
+        return redirect(url_for('static.message', message="No student found."))
 
     customer_id = student.stripe_customer_id
     if not customer_id:
@@ -63,23 +63,23 @@ def fetch_pending_subscriptions():
 def cancel_subscriptions():
     student = Student.query.get(current_user.student_id)
     if student is None:
-        return "No Student Found."
+        return redirect(url_for('static.message', message="No Student Found."))
 
     try:
         cancel_subscriptions()
-        return "Success"
+        return redirect(url_for('static.message', message="Success"))
     except Exception as e:
-        return "Please contact me directly. \n Error Occurred: " + e
+        return redirect(url_for('static.message', message=f"Please contact me directly. \n Error Occurred: {e}"))
 
 @payments_by.route("/success")
 @login_required
 def success():
-    return "Payment successful! Thank you for your payment." # create html later
+    return redirect(url_for('static.message', message="Payment successful! Thank you for your payment."))
 
 @payments_by.route("/cancel")
 @login_required
 def cancel():
-    return "Payment canceled. Please try again." # create html later
+    return redirect(url_for('static.message', message="Payment canceled."))
 
 @payments_by.route("/fetch-record")
 @login_required

@@ -15,7 +15,7 @@ def student_portal():
 
     student = Student.query.get(current_user.student_id)
     if student is None:
-        return "Thank you for making an account. Please contact Ethan to be added to the student list and gain access to the student portal."
+        return redirect(url_for('static.message', message="Thank you for making an account. Please contact Ethan to be added to the student list and gain access to the student portal."))
 
     student_scheduled_lessons = Lesson.query.filter_by(student_id=student.id, completed=False).all()
     student_past_lessons = Lesson.query.filter_by(student_id=student.id, completed=True).order_by(Lesson.lesson_date.desc()).all()

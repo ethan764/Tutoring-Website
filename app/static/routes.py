@@ -13,3 +13,7 @@ def about_me():
 @static_bp.route('/policies')
 def policies():
     return render_template('policies.html')
+
+@static_bp.route('/message/<message>')
+def message(message):
+    return render_template('message.html', message=message)

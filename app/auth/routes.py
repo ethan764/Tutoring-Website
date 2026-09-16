@@ -78,23 +78,23 @@ def register():
 
 
         print(f"Registered new user: {user.email}")
-        return f"Thank you for registering! Please click on the link we emailed you ({form.email.data}) to validate your account!"
+        return redirect(url_for('static.message', message=f"Thank you for registering! Please click on the link we emailed you ({form.email.data}) to validate your account!"))
     return render_template('register.html', form=form, title='Register')
 
 @auth_bp.route('/verify-email/<int:user_id>/<email_verification_code>')
 def verify_email(user_id, email_verification_code):
     user = User.query.get(user_id)
     if user is None:
-        return "Invalid Link: User not found"
+        return redirect(url_for('static.message', message="Invalid Link: User not found"))
     if datetime.fromisoformat(user.unverified_dispose_after) < datetime.utcnow():
-        return "The link as expired. Please register again."
+        return redirect(url_for('static.message', message="The link as expired. Please register again."))
     if user.verified == True:
-        return "User is already verified."
+        return redirect(url_for('static.message', message="User is already verified."))
 
     if bcrypt.check_password_hash(user.link_code_hashed, email_verification_code):
         user.verified = True
         db.session.commit()
-        return "The verification code has been accepted. Account has been verified."
+        return redirect(url_for('static.message', message="The verification code has been accepted. Account has been verified."))
 
 @auth_bp.route('/resend-code', methods=['GET', 'POST'])
 def resend_code():
