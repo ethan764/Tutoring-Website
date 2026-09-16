@@ -76,6 +76,10 @@ def register():
         user.link_code_hashed = hashed_email_verify_token
         db.session.commit()
 
+        hashed_email_verify_token = send_confirmation_link(user) # okay here we repeat because for some reason it doesn't work on first instance. I'm lazy. TODO
+        user.link_code_hashed = hashed_email_verify_token
+        db.session.commit()
+
 
         print(f"Registered new user: {user.email}")
         return redirect(url_for('static.message', message=f"Thank you for registering! Please click on the link we emailed you ({form.email.data}) to validate your account!"))
