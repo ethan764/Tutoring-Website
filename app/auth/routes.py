@@ -48,13 +48,12 @@ def send_confirmation_link(user):
                     body=f"""
 Hello,
 Please verify your email by clicking on the link below.
-{url_for('auth.verify_email', user_id=user.id, email_verification_code=email_verify_token)}
+{url_for('auth.verify_email', user_id=user.id, email_verification_code=email_verify_token, _external=True)}
 
-Thank you for choosing my tutoring services!
 Regards, 
 Ethan
 
-(This is an automated message. I'll still respond if you wish to reply)
+(This is an automated message. You can still reply to this email.)
 """
                     )
     except Exception as e:

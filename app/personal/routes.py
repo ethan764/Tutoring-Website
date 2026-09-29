@@ -4,3 +4,6 @@ from flask_login import login_required
 
 personal_bp = Blueprint("personal", __name__)
 
+@personal_bp.route("/portfolio")
+def portfolio():
+    return render_template('portfolio.html')
