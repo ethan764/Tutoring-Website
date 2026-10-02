@@ -25,9 +25,12 @@ def record_lesson(student_id):
     post_lesson_notes = request.form.get('post_lesson_notes')
 
     lesson = Lesson.query.get_or_404(lesson_id)
-    lesson.lesson_duration = int(lesson_duration)
-    lesson.post_lesson_notes = post_lesson_notes
-    lesson.completed = True
+    Lesson.edit(
+        lesson.id,
+        lesson_duration=int(lesson_duration),
+        post_lesson_notes=post_lesson_notes,
+        completed=True,
+    )
 
     student.lessons_taken += lesson.lesson_duration #counts hours
     if lesson.id in student.scheduled_lesson_ids:
@@ -53,17 +56,15 @@ def lesson_planner_create_lesson(student_id):
         lesson_notes = request.form.get('lesson_notes')
         lesson_time = request.form.get('lesson_time')
 
-        # Create a new Lesson object
-        new_lesson = Lesson(
+        new_lesson = Lesson.create(
             student_id=student.id,
             student_name=student.name,
             lesson_date=lesson_date,
             lesson_notes=lesson_notes,
-            lesson_work= lesson_homework,
+            lesson_work=lesson_homework,
             scheduled_time_pst=lesson_time,
             completed=False
         )
-        db.session.add(new_lesson)
 
         # Update the student's scheduled lessons
         student.scheduled_lesson_ids = student.scheduled_lesson_ids + [new_lesson.id]
@@ -82,11 +83,13 @@ def lesson_planner_edit_lesson(student_id, lesson_id):
 
     if request.method == 'POST':
         # Handle form submission for editing the lesson
-        lesson.lesson_date = request.form.get('lesson_date')
-        lesson.lesson_notes = request.form.get('lesson_notes')
-        lesson.lesson_work = request.form.get('lesson_homework')
-        lesson.scheduled_time_pst = request.form.get('lesson_time')
-        db.session.commit()
+        Lesson.edit(
+            lesson.id,
+            lesson_date=request.form.get('lesson_date'),
+            lesson_notes=request.form.get('lesson_notes'),
+            lesson_work=request.form.get('lesson_homework'),
+            scheduled_time_pst=request.form.get('lesson_time'),
+        )
 
         return redirect(url_for('students.student_chart', student_id=student.id))
 
@@ -145,17 +148,16 @@ def sync_from_google_sheet():
         for date_, info in lesson_dict.items():
             existing = Lesson.query.filter(and_(Lesson.student_name==name, cast(Lesson.lesson_date, String)==f'"{date_}"')).first()
             if existing == None:
-                existing = Lesson(
-                    student_id=student.id,
-                    student_name=student.name,
-                    lesson_date=date_,
-                    completed=True
-                )
-
-                db.session.add(existing)
-
-            for entry, data in info.items():
-                setattr(existing, entry, data)
+                lesson_data = {
+                    "student_id": student.id,
+                    "student_name": student.name,
+                    "lesson_date": date_,
+                    "completed": True,
+                }
+                lesson_data.update(info)
+                Lesson.create(**lesson_data)
+            else:
+                Lesson.edit(existing.id, **info)
 
     db.session.commit()
 
@@ -201,14 +203,19 @@ def create_lessons_from_weekly_schedule():
             # Check if a lesson already exists for this student and scheduled time
             lesson = Lesson.query.filter_by(student_id=student.id, scheduled_time_pst=scheduled_time).first()
             if lesson is None:
-                lesson = Lesson(
+                Lesson.create(
                     student_id=student.id,
                     student_name=student.name,
-                    completed=False
+                    completed=False,
+                    lesson_date=lesson_date.isoformat(),
+                    scheduled_time_pst=informal_time,
                 )
-                db.session.add(lesson)
-            lesson.lesson_date = lesson_date
-            lesson.scheduled_time_pst = informal_time
+            else:
+                Lesson.edit(
+                    lesson.id,
+                    lesson_date=lesson_date.isoformat(),
+                    scheduled_time_pst=informal_time,
+                )
 
     db.session.commit()
 

@@ -2,6 +2,10 @@ from datetime import datetime, timedelta
 from flask_login import UserMixin
 from app.extensions import db
 
+from todoist_interactor import add_lesson, edit_lesson_date
+
+import asyncio
+
 
 class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
@@ -45,3 +49,51 @@ class Lesson(db.Model):
 
     def __repr__(self):
         return f'<Lesson for Student ID {self.student_id}>'
+
+    # create a lesson
+    @classmethod
+    def create(cls, **kwargs):
+        lesson = cls(**kwargs)
+        db.session.add(lesson)
+        db.session.commit()
+
+        date_string = lesson.lesson_date + " " + lesson.scheduled_time_pst
+        try:
+            todoist_lesson = add_lesson(lesson.student_name, date_string)
+            db.session.add(TodoistLesson(lesson_id=lesson.id, todoist_task_id=todoist_lesson.id))
+            db.session.commit()
+        except Exception as e:
+            print(f"Failed to create Todoist lesson: {e}")
+
+        return lesson
+
+    @classmethod
+    def edit(cls, lesson_id, **kwargs):
+        lesson = cls.query.get(lesson_id)
+        if not lesson:
+            return None
+        for key, value in kwargs.items():
+            setattr(lesson, key, value)
+        db.session.commit()
+
+        # update Todoist lesson if lesson date or scheduled time has changed
+        todoist_lesson = TodoistLesson.query.filter_by(lesson_id=lesson_id).first()
+        if todoist_lesson:
+            date_string = lesson.lesson_date + " " + lesson.scheduled_time_pst
+            try:
+                updated_todoist_lesson = edit_lesson_date(todoist_lesson.todoist_task_id, date_string, completed=lesson.completed)
+                db.session.commit()
+            except Exception as e:
+                print(f"Failed to update Todoist lesson: {e}")
+
+        return lesson
+        
+
+class TodoistLesson(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    lesson_id = db.Column(db.Integer, db.ForeignKey('lesson.id'), nullable=False)
+    todoist_task_id = db.Column(db.String(100), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow())
+
+    def __repr__(self):
+        return f'<TodoistLesson for Lesson ID {self.lesson_id}, Todoist Task ID {self.todoist_task_id}>'

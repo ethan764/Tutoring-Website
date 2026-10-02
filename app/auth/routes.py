@@ -2,7 +2,7 @@ from flask import Blueprint, redirect, render_template, url_for
 from flask_login import login_user, logout_user, login_required
 from secrets import token_urlsafe
 from email_interactor import send_email
-from datetime import datetime
+from datetime import datetime, timedelta
 import os
 
 from app.extensions import bcrypt, db
@@ -41,7 +41,6 @@ def send_confirmation_link(user):
     hashed_email_verify_token = bcrypt.generate_password_hash(email_verify_token).decode('utf-8')
 
     try:
-        print('test')
         send_email(to_email=user.email,
                     subject="Email Verification",
                     use_html=False,
@@ -70,12 +69,9 @@ def register():
 
         user = User(email=form.email.data, password_hashed=hashed_password)        
         db.session.add(user)
-
-        hashed_email_verify_token = send_confirmation_link(user)
-        user.link_code_hashed = hashed_email_verify_token
         db.session.commit()
 
-        hashed_email_verify_token = send_confirmation_link(user) # okay here we repeat because for some reason it doesn't work on first instance. I'm lazy. TODO
+        hashed_email_verify_token = send_confirmation_link(user)
         user.link_code_hashed = hashed_email_verify_token
         db.session.commit()
 
@@ -111,6 +107,7 @@ def resend_code():
 
         hashed_link_code_confirmation = send_confirmation_link(user)
         user.link_code_hashed = hashed_link_code_confirmation
+        user.unverified_dispose_after = datetime.utcnow() + timedelta(hours=24)
         db.session.commit()
         return render_template('resend_code.html', form=form, error = "Success! Please review the email we sent you.")
 
