@@ -157,6 +157,7 @@ def sync_from_google_sheet():
                 lesson_data.update(info)
                 Lesson.create(**lesson_data)
             else:
+                info['completed'] = True
                 Lesson.edit(existing.id, **info)
 
     db.session.commit()
