@@ -73,6 +73,7 @@ def register():
 
         hashed_email_verify_token = send_confirmation_link(user)
         user.link_code_hashed = hashed_email_verify_token
+        user.unverified_dispose_after = datetime.utcnow() + timedelta(hours=24)
         db.session.commit()
 
 
