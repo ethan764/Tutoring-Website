@@ -42,7 +42,7 @@
                     <form action="{{ url_for('students.add_student') }}" method="post">
                         <input type="text" name="name" placeholder="Student Name">
                         <input type="text" name="meeting_link" placeholder="Google Meet Link">
-                        <input type="text" name="schedule" placeholder="Schedule (comma-separated)">
+                        <input type="text" name="schedule" placeholder="Schedule (comma-separated)" readonly>
                         <button type="submit">Add Student</button>
                     </form>
                 </td>

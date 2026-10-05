@@ -57,6 +57,9 @@ class Lesson(db.Model):
         db.session.add(lesson)
         db.session.commit()
 
+        if (lesson.completed):
+            return lesson
+
         date_string = lesson.lesson_date + " " + lesson.scheduled_time_pst
         try:
             todoist_lesson = add_lesson(lesson.student_name, date_string)
