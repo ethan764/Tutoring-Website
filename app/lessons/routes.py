@@ -201,8 +201,8 @@ def create_lessons_from_weekly_schedule():
             if lesson_date is None:
                 continue  # Skip invalid entries
 
-            # Check if a lesson already exists for this student and scheduled time
-            lesson = Lesson.query.filter_by(student_id=student.id, scheduled_time_pst=scheduled_time).first()
+            # Check if a lesson already exists for this student and lesson date
+            lesson = Lesson.query.filter_by(student_id=student.id, lesson_date=lesson_date.isoformat()).first()
             if lesson is None:
                 Lesson.create(
                     student_id=student.id,

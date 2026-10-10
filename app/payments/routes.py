@@ -1,9 +1,9 @@
-from flask import Blueprint, render_template, request, redirect, url_for, abort
+from flask import Blueprint, render_template, request, redirect, url_for, abort, jsonify
 from flask_login import login_required, current_user
 
 from app.extensions import db
 from app.models import Student, Lesson
-from stripe_interactor import create_checkout_session, create_customer, find_subscriptions, cancel_subscriptions
+from stripe_interactor import create_checkout_session, create_customer, find_subscriptions, cancel_subscriptions, on_payment_success
 
 from gsheet_interactor import get_payment_info
 
@@ -94,3 +94,12 @@ def fetch_record():
     print(student_record)
 
     return student_record
+
+@payments_by.route("/recieve-payments", methods=['POST'])
+def recieve_payments():
+    success_or_error = on_payment_success(request=request)
+
+    if success_or_error == True:
+        return jsonify(success=True), 200
+    else:
+        return jsonify(error=str(success_or_error)), 400
