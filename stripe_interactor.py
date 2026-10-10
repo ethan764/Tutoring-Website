@@ -85,4 +85,4 @@ def on_payment_success(request):
 
         return True
     except Exception as error:
-        return error
+        return str(error)

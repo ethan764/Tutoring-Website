@@ -102,4 +102,4 @@ def recieve_payments():
     if success_or_error == True:
         return jsonify(success=True), 200
     else:
-        return jsonify(error=str(success_or_error)), 400
+        return jsonify(error=success_or_error), 400
