@@ -72,7 +72,7 @@ def on_payment_success(request):
 
             if (event_notif.type != "v1.charge.successful"):
                 print("Stripe sent wrong event type: " + event_notif.type)
-                return
+                return "Stripe sent wrong event type: " + event_notif.type
 
             charge = event_notif.fetch_related_object()
 

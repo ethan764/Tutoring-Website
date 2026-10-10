@@ -98,7 +98,6 @@ def fetch_record():
 @payments_by.route("/recieve-payments", methods=['POST'])
 def recieve_payments():
     success_or_error = on_payment_success(request=request)
-    print(success_or_error)
     if success_or_error == True:
         return jsonify(success=True), 200
     else:
