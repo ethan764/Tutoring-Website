@@ -70,7 +70,7 @@ def on_payment_success(request):
             from typing import cast
             event_notif = cast(UnknownEventNotification, event_notif)
 
-            if (event_notif.type != "v1.charge.successful"):
+            if (event_notif.type != "v1.charge.succeeded"):
                 print("Stripe sent wrong event type: " + event_notif.type)
                 return "Stripe sent wrong event type: " + event_notif.type
 
