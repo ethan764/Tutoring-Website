@@ -87,7 +87,7 @@ def on_payment_success(request):
                 customer = client.v1.customers.retrieve(customer_id)
 
                 print(f"Someone spent {amount} in {currency} and it was {"real" if is_live else "fake"}.")
-                if is_live and currency == "usd":
+                if currency == "usd":
                     record_payment_info(customer.name, amount)
 
             asyncio.run(handle_async())
