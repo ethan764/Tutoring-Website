@@ -2,3 +2,4 @@ instance/
 .venv/
 g_apikey.json
 __pycache__/
+.env
