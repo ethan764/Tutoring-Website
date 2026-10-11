@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block title %}Payments Self-Service{% endblock %}
 {% block content %}
-<div> 
+<div class="sec1"> 
     <h1>Set up autopay</h1>
     <p>Through this portal, you may set up a subscription for tutoring hours on a weekly basis. You can cancel your subscriptions below.
     </p>
@@ -44,7 +44,7 @@
     </script>
 </div>
 <hr>
-<div>
+<div class="sec1">
     <h1>Payments history</h1>
     <p>Below are a list of your past payments. If you pay through Zelle, please allow 1-2 business days for me to record your payment</p>
     <hr>
@@ -61,14 +61,16 @@
                 items.forEach(paymentInfo => {
                     const entry = document.createElement('p')
                     entry.innerText = Object.entries(paymentInfo) // one day you can make this look better
-                    entry.parentElement = container
+                    container.appendChild(entry)
                 })
             } catch (err) {
                 const error_msg = document.createElement('p')
                 error_msg.innerText = "Something went wrong: ${err}"
-                error_msg.parentElement = document.getElementById('payments-container')
+                document.getElementById('payments-container').appendChild(error_msg)
             }
         }
+
+        loadPayments()
     </script>
 </div>
 {% endblock %}

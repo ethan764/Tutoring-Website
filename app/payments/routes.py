@@ -86,7 +86,7 @@ def success():
 def cancel():
     return redirect(url_for('static.message', message="Payment canceled."))
 
-@payments_by.route("/fetch-record", methods=['POST'])
+@payments_by.route("/fetch-record")
 @login_required
 def fetch_record():
     student = Student.query.get(current_user.student_id)
