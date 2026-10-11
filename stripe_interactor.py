@@ -90,7 +90,7 @@ def on_payment_success(request):
                 if is_live and currency == "usd":
                     record_payment_info(customer.name, amount)
 
-            asyncio.run(handle_async)
+            asyncio.run(handle_async())
         return True
     except Exception as error:
         return str(error)
