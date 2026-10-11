@@ -71,7 +71,10 @@ def get_payment_info():
 
     return payments_info
 
-def record_payment_info(student_name, payment_sum, hours_quantity):
+def record_payment_info(student_name, payment_sum, hours_quantity=-1):
     entries=len(payments_sheet.col_values(1))
     timestamp = datetime.now(ZoneInfo("America/Los_Angeles")).strftime(sheets_timestamp_format)
-    payments_sheet.update([[timestamp, student_name, payment_sum, hours_quantity]], f"A{entries+1}:D{entries+1}")
+    if hours_quantity >= -1:
+        payments_sheet.update([[timestamp, student_name, payment_sum, hours_quantity]], f"A{entries+1}:D{entries+1}")
+    elif hours_quantity == -1:
+        payments_sheet.update([[timestamp, student_name, payment_sum]], f"A{entries+1}:C{entries+1}")

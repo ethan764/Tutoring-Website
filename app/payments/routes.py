@@ -23,9 +23,7 @@ def portal():
 @payments_by.route("/fetch_stripe/<student_id>/<price_type>", methods=["POST"])
 @login_required
 def fetch_stripe(student_id, price_type):
-    # this type of auth should be a wrapper?
-    if current_user.student_id != student_id:
-        return redirect(url_for('static.message', message="Invalid Authentication."))
+    # auth may not be quite right on this
 
     student = Student.query.get(student_id)
     if student is None:
@@ -51,11 +49,18 @@ def fetch_pending_subscriptions():
         abort(400, description="No student found.")
 
     try:
-        subscriptions = find_subscriptions()
+        subscriptions = find_subscriptions(student.stripe_customer_id)
         toReturn = []
+
+        num = 0
         for subscription in subscriptions:
-            toReturn.append({"???"}) #TODO TO DISPLAY ON ACTUAL PAGE
+            num += 1
+            
+
+        toReturn.append(f"You have auto-pay set up for {num} lessons.") #TODO TO DISPLAY ON ACTUAL PAGE
+        return toReturn
     except Exception as e:
+        print(str(e))
         abort(500, description="Something went wrong on our end.")
 
 @payments_by.route('/cancel-stripe-subscriptions')
@@ -81,7 +86,7 @@ def success():
 def cancel():
     return redirect(url_for('static.message', message="Payment canceled."))
 
-@payments_by.route("/fetch-record")
+@payments_by.route("/fetch-record", methods=['POST'])
 @login_required
 def fetch_record():
     student = Student.query.get(current_user.student_id)

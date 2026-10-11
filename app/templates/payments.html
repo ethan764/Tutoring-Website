@@ -1,7 +1,50 @@
 {% extends "base.html" %}
 {% block title %}Payments Self-Service{% endblock %}
 {% block content %}
-<div class="sec1">
+<div> 
+    <h1>Set up autopay</h1>
+    <p>Through this portal, you may set up a subscription for tutoring hours on a weekly basis. You can cancel your subscriptions below.
+    </p>
+    <p>
+        I use Stripe as a payment processor to offer this service and will not have access to your payment credentials through the platform.
+        This service is only provided as a convenience. If you would like to pay for lessons individually or in bulk, please Zelle me (contact me for details).
+    </p>
+    <form action="{{ url_for('payments.fetch_stripe', student_id=student.id, price_type='39 weekly') }}" method="post">
+        <label for="quantity">Quantity (Hours / Wk.):</label>
+        <input type="number" id="quantity" name="quantity" min="1" value="1">
+        <button type="submit">Redirect to checkout</button>
+    </form>
+    <hr>
+    
+    <h2>Cancel Subscriptions</h2>
+    <p id="cancel-subscriptions"></p>
+    <p id="subscription-container"></p>
+    <a href="{{ url_for('payments.cancel_subscriptions') }}">Cancel Active Subscriptions</a>
+    <script>
+        async function loadSubscriptions() {
+            try {
+                const response = await fetch("{{ url_for('payments.fetch_pending_subscriptions') }}");
+                console.log(response.ok)
+                if (response.ok == false) {console.log("t"); throw new Error(`Server error: ${response.status}`)};
+
+                const array = await response.json(); // array just cause im lazy to change it; maybe add more details later
+                console.log(array[0])
+
+                const container = document.getElementById('subscription-container');
+                const header = document.getElementById('cancel-subscriptions');
+                
+
+                container.innerText = array[0]
+            } catch (err) {
+                console.log(err);
+            }
+        }
+
+        loadSubscriptions()
+    </script>
+</div>
+<hr>
+<div>
     <h1>Payments history</h1>
     <p>Below are a list of your past payments. If you pay through Zelle, please allow 1-2 business days for me to record your payment</p>
     <hr>
@@ -16,19 +59,16 @@
 
                 const container = document.getElementById('payments-container')
                 items.forEach(paymentInfo => {
-                    console.log(Object.entries(paymentInfo))
                     const entry = document.createElement('p')
                     entry.innerText = Object.entries(paymentInfo) // one day you can make this look better
-                    container.appendChild(entry)
+                    entry.parentElement = container
                 })
             } catch (err) {
                 const error_msg = document.createElement('p')
                 error_msg.innerText = "Something went wrong: ${err}"
-                document.getElementById('payments-container').appendChild(error_msg)
+                error_msg.parentElement = document.getElementById('payments-container')
             }
         }
-
-        loadPayments()
     </script>
 </div>
 {% endblock %}

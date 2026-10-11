@@ -1,5 +1,8 @@
 import stripe
 import os
+import asyncio
+
+from gsheet_interactor import record_payment_info
 
 from stripe.events import UnknownEventNotification
 
@@ -44,7 +47,7 @@ def create_checkout_session(customer_id, price_type, quantity, success_url, canc
             'price': price_id_dict[price_type],
             'quantity': quantity,
         }],
-        mode='payment',
+        mode='subscription',
         success_url=success_url,
         cancel_url=cancel_url,
         metadata={
@@ -56,7 +59,6 @@ def create_checkout_session(customer_id, price_type, quantity, success_url, canc
 
     return session
 
-#todo HANDLE COMPLETION OF CHECKOUT SESSIONS (use webhooks) AND UPDATE STUDENT INFO IN DATABASE AND GOOGLE SHEET; after connected to domain and online
 def on_payment_success(request):
     body = request.data
     sig_header = request.headers.get("Stripe-Signature")
@@ -77,12 +79,18 @@ def on_payment_success(request):
             charge = event_notif.fetch_related_object()
 
             currency = charge.currency
-            customer = charge.customer
-            amount = charge.amount_captured
+            customer_id = charge.customer
             is_live = event_notif.fetch_event().livemode
+            amount = charge.amount_captured
 
-            print(f"Someone spent {amount} in {currency} and it was {"real" if is_live else "fake"}.")
+            async def handle_async():
+                customer = client.v1.customers.retrieve(customer_id)
 
+                print(f"Someone spent {amount} in {currency} and it was {"real" if is_live else "fake"}.")
+                if is_live and currency == "usd":
+                    record_payment_info(customer.name, amount)
+
+            asyncio.run(handle_async)
         return True
     except Exception as error:
         return str(error)
