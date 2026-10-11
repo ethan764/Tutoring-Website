@@ -38,7 +38,8 @@ def find_subscriptions(customer_id):
 def cancel_subscriptions(customer_id):
     subscriptions = find_subscriptions(customer_id)
     for subscription in subscriptions:
-        stripe.Subscription.delete(subscription.id)
+        stripe.Subscription.cancel(subscription.id)
+        print("cancelled 1")
 
 def create_checkout_session(customer_id, price_type, quantity, success_url, cancel_url):
     session = stripe.checkout.Session.create(

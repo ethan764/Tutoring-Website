@@ -3,7 +3,8 @@ from flask_login import login_required, current_user
 
 from app.extensions import db
 from app.models import Student, Lesson
-from stripe_interactor import create_checkout_session, create_customer, find_subscriptions, cancel_subscriptions, on_payment_success
+from stripe_interactor import create_checkout_session, create_customer, find_subscriptions, on_payment_success
+from stripe_interactor import cancel_subscriptions as cancel_subscriptions_direct
 
 from gsheet_interactor import get_payment_info
 
@@ -71,7 +72,7 @@ def cancel_subscriptions():
         return redirect(url_for('static.message', message="No Student Found."))
 
     try:
-        cancel_subscriptions()
+        cancel_subscriptions_direct(student.stripe_customer_id)
         return redirect(url_for('static.message', message="Success"))
     except Exception as e:
         return redirect(url_for('static.message', message=f"Please contact me directly. \n Error Occurred: {e}"))
