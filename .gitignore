@@ -3,3 +3,4 @@ instance/
 g_apikey.json
 __pycache__/
 .env
+auth_backup_codes.txt
