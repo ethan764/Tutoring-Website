@@ -41,7 +41,7 @@ def get_lesson_info():
         dt = datetime.strptime(lesson['Date'], sheets_date_format)
         students_lesson_info[lesson['Student']][str(dt.date())] = {
             'post_lesson_notes' : lesson['Notes'],
-            'lesson_duration' : int(lesson['Length of Lesson (hrs)']),
+            'lesson_duration' : int(lesson['Converted Length of Lesson (hrs)']),
             'lesson_date' : str(dt.date())
         }
 
