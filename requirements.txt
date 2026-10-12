@@ -45,3 +45,4 @@ urllib3==2.7.0
 waitress==3.0.2
 Werkzeug==3.1.8
 WTForms==3.2.2
+pytest==9.1.1

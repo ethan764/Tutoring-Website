@@ -12,7 +12,7 @@ from app.auth.forms import LoginForm, RegisterForm, ResendCodeForm
 
 auth_bp = Blueprint("auth", __name__)
 
-
+# 
 @auth_bp.route('/login', methods=['GET', 'POST'])
 def login():
     form = LoginForm()
