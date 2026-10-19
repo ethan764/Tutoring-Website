@@ -72,7 +72,11 @@ def update_student(student_id):
 def add_student():
     name = request.form.get('name')
     meeting_link = request.form.get('meeting_link')
-    schedule = request.form.get('schedule').split(', ')
+    schedule = [
+        entry.strip()
+        for entry in request.form.get('schedule', '').split(',')
+        if entry.strip()
+    ]
 
     new_student = Student(name=name, meeting_link=meeting_link, schedule=schedule)
     db.session.add(new_student)

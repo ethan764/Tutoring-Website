@@ -43,7 +43,7 @@ class Lesson(db.Model):
     post_lesson_notes = db.Column(db.String(100), default='')
     completed = db.Column(db.Boolean, default=False)
     lesson_duration = db.Column(db.Integer, default = 0)  # Duration in hours
-    created_at = db.Column(db.DateTime, default=datetime.utcnow())
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     scheduled_time_pst = db.Column(db.String(50), default='')
 
@@ -52,12 +52,12 @@ class Lesson(db.Model):
 
     # create a lesson
     @classmethod
-    def create(cls, **kwargs):
+    def create(cls, create_todoist=True, **kwargs):
         lesson = cls(**kwargs)
         db.session.add(lesson)
         db.session.commit()
 
-        if (lesson.completed):
+        if lesson.completed or not create_todoist:
             return lesson
 
         date_string = lesson.lesson_date + " " + lesson.scheduled_time_pst
@@ -96,7 +96,7 @@ class TodoistLesson(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     lesson_id = db.Column(db.Integer, db.ForeignKey('lesson.id'), nullable=False)
     todoist_task_id = db.Column(db.String(100), nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow())
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     def __repr__(self):
         return f'<TodoistLesson for Lesson ID {self.lesson_id}, Todoist Task ID {self.todoist_task_id}>'

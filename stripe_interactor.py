@@ -48,7 +48,7 @@ def create_checkout_session(customer_id, price_type, quantity, success_url, canc
             'price': price_id_dict[price_type],
             'quantity': quantity,
         }],
-        mode='subscription',
+        mode='subscription', # subs only for now
         success_url=success_url,
         cancel_url=cancel_url,
         metadata={

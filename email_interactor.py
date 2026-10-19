@@ -4,6 +4,7 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from email_validator import validate_email, EmailNotValidError
 
+# validates emails, expect bool verification, normalized email.
 def val_email(to_email):
     try:
         # Validate and get normalized form
@@ -12,6 +13,7 @@ def val_email(to_email):
     except EmailNotValidError as e:
         return False, str(e)
 
+# Sends an email using Gmail's SMTP server. validates email, requires subject and body.
 def send_email(to_email, subject, body, use_html=False):
     if val_email(to_email) == False:
         print("Invalid email: " + to_email)

@@ -1,10 +1,12 @@
 from flask import Flask
 from app.extensions import db, bcrypt, login_manager
 
-def create_app():
+def create_app(config=None):
     app = Flask(__name__)
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///test.db'
     app.config['SECRET_KEY'] = 'secret_key'  # Replace with a secure key in production
+    if config:
+        app.config.update(config)
 
     db.init_app(app)
     bcrypt.init_app(app)

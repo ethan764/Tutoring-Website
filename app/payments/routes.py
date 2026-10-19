@@ -4,11 +4,13 @@ from flask_login import login_required, current_user
 from app.extensions import db
 from app.models import Student, Lesson
 from stripe_interactor import create_checkout_session, create_customer, find_subscriptions, on_payment_success
+from stripe_interactor import price_id_dict
 from stripe_interactor import cancel_subscriptions as cancel_subscriptions_direct
 
 from gsheet_interactor import get_payment_info
 
 payments_by = Blueprint("payments", __name__)
+MAX_CHECKOUT_QUANTITY = 100
 
 @payments_by.route("/portal")
 @login_required
@@ -21,10 +23,22 @@ def portal():
 
     
 
-@payments_by.route("/fetch_stripe/<student_id>/<price_type>", methods=["POST"])
+@payments_by.route("/fetch_stripe/<int:student_id>/<price_type>", methods=["POST"])
 @login_required
 def fetch_stripe(student_id, price_type):
-    # auth may not be quite right on this
+    if current_user.student_id != student_id:
+        abort(403)
+
+    if price_type not in price_id_dict:
+        abort(400, description="Unsupported payment option.")
+
+    quantity_value = request.form.get('quantity', request.args.get('quantity', '1'))
+    try:
+        quantity = int(quantity_value)
+    except (TypeError, ValueError):
+        abort(400, description="Quantity must be a whole number.")
+    if not 1 <= quantity <= MAX_CHECKOUT_QUANTITY:
+        abort(400, description=f"Quantity must be between 1 and {MAX_CHECKOUT_QUANTITY}.")
 
     student = Student.query.get(student_id)
     if student is None:
@@ -37,7 +51,6 @@ def fetch_stripe(student_id, price_type):
         db.session.commit()
         customer_id = customer.id
 
-    quantity = int(request.form.get('quantity', request.args.get('quantity', 1)))
     session = create_checkout_session(customer_id, price_type, quantity, url_for('payments.success', _external=True), url_for('payments.cancel', _external=True))
     return redirect(session.url)
 

@@ -95,6 +95,7 @@ def verify_email(user_id, email_verification_code):
         user.verified = True
         db.session.commit()
         return redirect(url_for('static.message', message="The verification code has been accepted. Account has been verified."))
+    return redirect(url_for('static.message', message="Invalid verification code. Please use the link from your latest verification email."))
 
 @auth_bp.route('/resend-code', methods=['GET', 'POST'])
 def resend_code():

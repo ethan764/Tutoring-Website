@@ -155,7 +155,7 @@ def sync_from_google_sheet():
                     "completed": True,
                 }
                 lesson_data.update(info)
-                Lesson.create(**lesson_data)
+                Lesson.create(create_todoist=False, **lesson_data)
             else:
                 info['completed'] = True
                 Lesson.edit(existing.id, **info)
@@ -196,13 +196,18 @@ def create_lessons_from_weekly_schedule():
     for student in students:
         # scheduled_time is in format "(M/T/W/Th/F/Sa/Su) H(AM/PM)"; only date is necessary to extract from schedule, time is fine as string.
         for scheduled_time in student.schedule:
+            if not scheduled_time.strip():
+                continue
             day_of_week, informal_time = scheduled_time.split(' ', 1)
             lesson_date = convert_day_week_year_to_date(day_of_week, week_of_year, year)
             if lesson_date is None:
                 continue  # Skip invalid entries
 
             # Check if a lesson already exists for this student and lesson date
-            lesson = Lesson.query.filter_by(student_id=student.id, lesson_date=lesson_date.isoformat()).first()
+            lesson = Lesson.query.filter(
+                Lesson.student_id == student.id,
+                cast(Lesson.lesson_date, String) == f'"{lesson_date.isoformat()}"',
+            ).first()
             if lesson is None:
                 Lesson.create(
                     student_id=student.id,
