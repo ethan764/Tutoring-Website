@@ -8,6 +8,7 @@
 <body>
     <h1>Send Courtesy Emails</h1>
     <form action="{{ url_for('lessons.send_courtesy_emails') }}" method="post">
+        <input type="checkbox" id="send_day_before" value="1" name="send_day_before">Send Day Before Each Lesson<br>
         {% for lesson in scheduled_lessons %}
             <div>
                 <p>Student: {{ lesson.student_name }} ||

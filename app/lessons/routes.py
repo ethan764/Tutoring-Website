@@ -1,4 +1,4 @@
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 
 from flask import Blueprint, render_template, request, redirect, url_for
 from sqlalchemy import and_, cast, String
@@ -6,11 +6,11 @@ from flask_login import login_required
 import asyncio
 
 from app.decorators import admin_whitelist_check
-from app.extensions import db
+from app.extensions import db, scheduler
 from app.models import Student, Lesson
 from gsheet_interactor import get_lesson_info, get_student_info, record_lesson_info
 from lesson_suggestion import suggest_lessons_ollama
-from email_interactor import send_email
+from email_interactor import send_email, send_scheduled_email
 
 lessons_bp = Blueprint("lessons", __name__)
 
@@ -233,6 +233,7 @@ def create_lessons_from_weekly_schedule():
 def send_courtesy_emails():
 
     if request.method == 'POST':
+        send_day_before = request.form.get('send_day_before') == '1'
         scheduled_lesson_ids = request.form.getlist('scheduled_lesson_ids')
         subject = request.form.get('subject_format')
         body = request.form.get('body_format') # '_lsns_' means fill in lesson list; '_name_' means fill in name
@@ -249,22 +250,61 @@ def send_courtesy_emails():
 
             scheduled_lesson_ids.pop(0)
 
-        # emails by student
-        for student_id, lessons in student_to_lessons.items():
-            student = Student.query.get(student_id)
-            if student == None:
-                continue
+        # scheduled emails
+        if send_day_before:
+            for student_id, lessons in student_to_lessons.items():
+                student = Student.query.get(student_id)
+                if student == None or student.email == None:
+                    continue
 
-            lesson_info_str = []
-            for lesson in lessons:
-                
-                lesson_info_str.append(f'- Lesson on {lesson.lesson_date} at {lesson.scheduled_time_pst} (Pacific Time, PST)\n')
-            lesson_info_str = "".join(lesson_info_str)
+                #schedule individual emails for each lesson
+                for lesson in lessons:
+                    lesson_info_str = f'- Lesson on {lesson.lesson_date} at {lesson.scheduled_time_pst} (Pacific Time, PST)\n'
+                    body_exact = body.replace('_name_', student.name).replace('_lsns_', lesson_info_str)
 
-            body_exact = body.replace('_name_', student.name).replace('_lsns_', lesson_info_str)
-            send_email(student.email, subject, body_exact, use_html=True)
+                    lesson_datetime = datetime.strptime(f"{lesson.lesson_date}", "%Y-%m-%d") 
+                    #sends emails at 8AM PST Day before
+                    send_time = lesson_datetime.replace(hour=8, minute=0, second=0) - timedelta(days=1)
+                    #adjust timezone to UTC for scheduler
+                    send_time = send_time + timedelta(hours=8)
 
-        return redirect(url_for('static.message', message="Success"))
+                    #add job to db
+                    from app.models import EmailPendingJob
+                    new_job = EmailPendingJob(
+                        body=body_exact,
+                        to_email=student.email,
+                        subject=subject,
+                        use_html=True,
+                        scheduled_time=send_time,
+                    )
+                    db.session.add(new_job)
+                    db.session.commit()
+
+                    scheduler.add_job(
+                        id=f"courtesy_email_{lesson.id}",
+                        func=send_scheduled_email,
+                        trigger='date',
+                        run_date=send_time,
+                        misfire_grace_time=36000000,
+                        args=[student.email, subject, body_exact, True, new_job.id]
+                    )
+        else:
+            # emails by student
+            for student_id, lessons in student_to_lessons.items():
+                student = Student.query.get(student_id)
+                if student == None or student.email == None:
+                    continue
+
+                lesson_info_str = []
+                for lesson in lessons:
+                    
+                    lesson_info_str.append(f'- Lesson on {lesson.lesson_date} at {lesson.scheduled_time_pst} (Pacific Time, PST)\n')
+                lesson_info_str = "".join(lesson_info_str)
+
+                body_exact = body.replace('_name_', student.name).replace('_lsns_', lesson_info_str)
+                send_email(student.email, subject, body_exact, use_html=True)
+
+            return redirect(url_for('static.message', message="Success"))
             
 
     scheduled_lessons = Lesson.query.filter_by(completed=False).order_by(Lesson.lesson_date).all()

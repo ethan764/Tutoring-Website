@@ -21,6 +21,7 @@ def install_service_stubs():
 
     email = types.ModuleType("email_interactor")
     email.send_email = lambda *args, **kwargs: None
+    email.send_scheduled_email = lambda *args, **kwargs: None
     email.val_email = lambda address: (True, address)
     sys.modules["email_interactor"] = email
 
@@ -58,6 +59,7 @@ def app():
             "SQLALCHEMY_DATABASE_URI": "sqlite://",
             "SECRET_KEY": "test-secret",
             "WTF_CSRF_ENABLED": False,
+            "SCHEDULER_ENABLED": False,
         }
     )
     with app.app_context():

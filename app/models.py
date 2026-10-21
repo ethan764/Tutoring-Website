@@ -100,3 +100,15 @@ class TodoistLesson(db.Model):
 
     def __repr__(self):
         return f'<TodoistLesson for Lesson ID {self.lesson_id}, Todoist Task ID {self.todoist_task_id}>'
+
+class EmailPendingJob(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    body = db.Column(db.String(1000), nullable=False)
+    to_email = db.Column(db.String(100), nullable=False)
+    subject = db.Column(db.String(200), nullable=False)
+    use_html = db.Column(db.Boolean, default=False)
+    scheduled_time = db.Column(db.DateTime, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    def __repr__(self):
+        return f'<EmailPendingJob with subject "{self.subject}" for Scheduled Time {self.scheduled_time}>'

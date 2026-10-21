@@ -1,10 +1,15 @@
 from flask import Flask
-from app.extensions import db, bcrypt, login_manager
+from app.extensions import db, bcrypt, login_manager, scheduler
+
+class Config:
+    SCHEDULER_API_ENABLED = True
+    SCHEDULER_ENABLED = True
 
 def create_app(config=None):
     app = Flask(__name__)
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///test.db'
     app.config['SECRET_KEY'] = 'secret_key'  # Replace with a secure key in production
+    app.config.from_object(Config)
     if config:
         app.config.update(config)
 
@@ -30,5 +35,9 @@ def create_app(config=None):
     app.register_blueprint(lessons_bp, url_prefix='/lessons')
     app.register_blueprint(payments_by, url_prefix='/payments')
     app.register_blueprint(static_bp, url_prefix="/")
+
+    if app.config["SCHEDULER_ENABLED"]:
+        scheduler.init_app(app)
+        scheduler.start()
 
     return app
