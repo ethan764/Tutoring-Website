@@ -309,3 +309,19 @@ def send_courtesy_emails():
 
     scheduled_lessons = Lesson.query.filter_by(completed=False).order_by(Lesson.lesson_date).all()
     return render_template('email_send.html', scheduled_lessons=scheduled_lessons)
+
+@lessons_bp.route('/reqs/delete-lesson/<int:lesson_id>')
+@login_required
+@admin_whitelist_check
+def delete_lesson(lesson_id):
+    lesson = Lesson.query.get_or_404(lesson_id)
+    student = Student.query.get_or_404(lesson.student_id)
+
+    # Remove the lesson ID from the student's scheduled lessons if it exists
+    if lesson.id in student.scheduled_lesson_ids:
+        student.scheduled_lesson_ids = [lid for lid in student.scheduled_lesson_ids if lid != lesson.id]
+
+    db.session.delete(lesson)
+    db.session.commit()
+
+    return redirect(url_for('students.student_chart', student_id=student.id))

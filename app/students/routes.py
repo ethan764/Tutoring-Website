@@ -99,3 +99,12 @@ def student_chart(student_id):
     student_scheduled_lessons = Lesson.query.filter_by(student_id=student.id, completed=False).all()
     student_past_lessons = Lesson.query.filter_by(student_id=student.id, completed=True).order_by(Lesson.lesson_date.desc()).all()
     return render_template('student_chart.html', student=student, scheduled_lessons=student_scheduled_lessons, past_lessons=student_past_lessons)
+
+@students_bp.route('/delete_student/<int:student_id>')
+@login_required
+@admin_whitelist_check
+def delete_student(student_id):
+    student = Student.query.get_or_404(student_id)
+    db.session.delete(student)
+    db.session.commit()
+    return redirect(url_for('students.index'))
