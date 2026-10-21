@@ -22,6 +22,13 @@ def edit_lesson_date(task_id, new_date_time="", completed=False):
         print(f"Task with id {task_id} not found.")
         return None
 
-    if completed:
-        client.complete_task(task_id)
-    return client.update_task(task_id, due_string=new_date_time)
+    task = False
+
+    try:
+        if completed:
+            client.complete_task(task_id)
+        task = client.update_task(task_id, due_string=new_date_time)
+    except todoist_api.exceptions.BadRequestError as e:
+        print(f"Failed to update task with id {task_id}: {e}")
+
+    return task
