@@ -5,7 +5,7 @@ import pytest
 
 import app.lessons.routes as lesson_routes
 from app.extensions import db
-from app.models import Lesson, Student, TodoistLesson, User
+from app.models import EmailPendingJob, Lesson, Student, TodoistLesson, User
 
 
 def test_student_portal_shows_only_associated_students_lessons(client, factories, login_as):
@@ -128,12 +128,26 @@ def test_student_chart_refreshes_scheduled_lesson_ids(client, factories, admin, 
         ("Monday", date(2026, 10, 19)),
         ("mon", date(2026, 10, 19)),
         ("M", date(2026, 10, 19)),
+        ("TH", date(2026, 10, 22)),
         ("Sunday", date(2026, 10, 25)),
         ("su", date(2026, 10, 25)),
+        ("MON", date(2026, 10, 19)),
     ],
 )
 def test_convert_day_week_year_to_date_accepts_documented_aliases(day, expected):
     assert lesson_routes.convert_day_week_year_to_date(day, 43, 2026) == expected
+
+
+@pytest.mark.parametrize(
+    ("week", "year", "day", "expected"),
+    [
+        (1, 2021, "Mon", date(2021, 1, 4)),
+        (1, 2021, "Sun", date(2021, 1, 10)),
+        (53, 2020, "Thu", date(2020, 12, 31)),
+    ],
+)
+def test_convert_day_week_year_to_date_handles_iso_year_boundaries(week, year, day, expected):
+    assert lesson_routes.convert_day_week_year_to_date(day, week, year) == expected
 
 
 def test_convert_day_week_year_to_date_rejects_invalid_inputs():
@@ -193,6 +207,34 @@ def test_weekly_schedule_skips_blank_entries_and_requires_week_date(client, fact
     assert valid_date.status_code == 302
     assert student.schedule == ["", "   "]
     assert add_calls == []
+
+
+def test_weekly_schedule_skips_invalid_day_entries(client, factories, admin, login_as, monkeypatch):
+    student = factories.student(name="Invalid entries", schedule=["Funday 9AM", "Mon 9AM"])
+    create_calls = []
+    monkeypatch.setattr(
+        Lesson,
+        "create",
+        classmethod(lambda cls, **kwargs: create_calls.append(kwargs)),
+    )
+    login_as(client, admin.email)
+
+    response = client.post(
+        "/lessons/reqs/create-lessons-from-weekly-schedule",
+        data={"date_of_week": "2026-10-19"},
+    )
+
+    assert response.status_code == 302
+    assert student.schedule == ["Funday 9AM", "Mon 9AM"]
+    assert create_calls == [
+        {
+            "student_id": student.id,
+            "student_name": student.name,
+            "completed": False,
+            "lesson_date": "2026-10-19",
+            "scheduled_time_pst": "9AM",
+        }
+    ]
 
 
 def test_task_manager_lists_students_and_unplanned_lessons(client, factories, admin, login_as):
@@ -473,6 +515,43 @@ def test_google_sheet_sync_updates_existing_lesson_and_student_data(client, fact
     assert existing.post_lesson_notes == "Updated from sheet"
 
 
+def test_google_sheet_sync_ignores_unknown_students_and_is_idempotent(
+    client, factories, admin, login_as, monkeypatch
+):
+    known_student = factories.student(name="Ada")
+    monkeypatch.setattr(lesson_routes, "get_student_info", lambda: {"Unknown": {"lessons_taken": 3}})
+    monkeypatch.setattr(
+        lesson_routes,
+        "get_lesson_info",
+        lambda: {
+            "Ada": {
+                "2026-10-19": {
+                    "lesson_date": "2026-10-19",
+                    "lesson_duration": 1,
+                    "post_lesson_notes": "Imported once",
+                }
+            },
+            "Unknown": {
+                "2026-10-20": {
+                    "lesson_date": "2026-10-20",
+                    "lesson_duration": 1,
+                }
+            },
+        },
+    )
+    login_as(client, admin.email)
+
+    first_sync = client.get("/lessons/reqs/sync-from-google-sheet")
+    second_sync = client.get("/lessons/reqs/sync-from-google-sheet")
+
+    imported = Lesson.query.filter_by(student_id=known_student.id).all()
+    assert first_sync.status_code == second_sync.status_code == 302
+    assert len(imported) == 1
+    assert imported[0].completed is True
+    assert imported[0].post_lesson_notes == "Imported once"
+    assert Student.query.filter_by(name="Unknown").count() == 0
+
+
 def test_lesson_suggestion_uses_student_lessons_and_notes(client, factories, admin, login_as, monkeypatch):
     student = factories.student(general_notes="Needs confidence with fractions")
     lesson = factories.lesson(student, lesson_notes="Fractions")
@@ -513,3 +592,55 @@ def test_courtesy_email_sends_one_personalized_email_per_student(client, factori
     assert len(email_calls) == 2
     assert {call[0][0] for call in email_calls} == {"ada@example.com", "grace@example.com"}
     assert all(call[1]["use_html"] is True for call in email_calls)
+
+
+def test_courtesy_emails_can_schedule_one_persisted_job_per_lesson(
+    client, factories, admin, login_as, monkeypatch
+):
+    student = factories.student(name="Ada", email="ada@example.com")
+    first_lesson = factories.lesson(
+        student,
+        lesson_date="2026-10-20",
+        scheduled_time_pst="9AM",
+    )
+    second_lesson = factories.lesson(
+        student,
+        lesson_date="2026-10-21",
+        scheduled_time_pst="10AM",
+    )
+    scheduled_calls = []
+    monkeypatch.setattr(
+        lesson_routes.scheduler,
+        "add_job",
+        lambda **kwargs: scheduled_calls.append(kwargs),
+    )
+    login_as(client, admin.email)
+
+    response = client.post(
+        "/lessons/reqs/send-courtesy-emails",
+        data={
+            "send_day_before": "1",
+            "scheduled_lesson_ids": [str(first_lesson.id), str(second_lesson.id)],
+            "subject_format": "Schedule",
+            "body_format": "Hello _name_: _lsns_",
+        },
+    )
+
+    jobs = EmailPendingJob.query.order_by(EmailPendingJob.scheduled_time).all()
+    assert response.status_code == 200
+    assert [job.to_email for job in jobs] == ["ada@example.com", "ada@example.com"]
+    assert [job.scheduled_time.isoformat() for job in jobs] == [
+        "2026-10-19T16:00:00",
+        "2026-10-20T16:00:00",
+    ]
+    assert all(job.subject == "Schedule" and job.use_html for job in jobs)
+    assert "Hello Ada" in jobs[0].body
+    assert "2026-10-20 at 9AM" in jobs[0].body
+    assert [call["id"] for call in scheduled_calls] == [
+        f"courtesy_email_{first_lesson.id}",
+        f"courtesy_email_{second_lesson.id}",
+    ]
+    assert [call["run_date"] for call in scheduled_calls] == [
+        jobs[0].scheduled_time,
+        jobs[1].scheduled_time,
+    ]

@@ -42,6 +42,31 @@ def test_registration_rejects_invalid_email_and_short_password(client):
     assert User.query.count() == 0
 
 
+def test_registration_rejects_password_mismatch_and_duplicate_email(client, factories):
+    existing_user = factories.user(email="registered@example.com", verified=True)
+
+    mismatch = client.post(
+        "/auth/register",
+        data={
+            "email": "new-student@example.com",
+            "password": "secret1",
+            "confirm_password": "different",
+        },
+    )
+    duplicate = client.post(
+        "/auth/register",
+        data={
+            "email": existing_user.email,
+            "password": "secret1",
+            "confirm_password": "secret1",
+        },
+    )
+
+    assert mismatch.status_code == 200
+    assert duplicate.status_code == 200
+    assert User.query.count() == 1
+
+
 def test_login_rejects_unknown_unverified_and_wrong_password(client, factories):
     factories.user(email="unverified@example.com", verified=False)
     factories.user(email="verified@example.com", verified=True)
@@ -93,6 +118,10 @@ def test_verification_accepts_valid_token_and_rejects_invalid_token(client, fact
     valid_response = client.get(f"/auth/verify-email/{user.id}/{valid_token}")
     assert valid_response.status_code == 302
     assert User.query.get(user.id).verified is True
+
+    repeated_response = client.get(f"/auth/verify-email/{user.id}/{valid_token}")
+    assert repeated_response.status_code == 302
+    assert "already%20verified" in repeated_response.headers["Location"]
 
 
 def test_verification_rejects_expired_or_missing_users(client, factories, models):

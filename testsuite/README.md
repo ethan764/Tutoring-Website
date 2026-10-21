@@ -12,9 +12,12 @@ read or modify the development database.
 
 Coverage includes registration, login, email verification, authorization,
 student records and lesson history, lesson planning and recording, schedule
-generation and synchronization, payments request handling, and rendered public
-pages. Model/route tests replace integrations with test doubles before the
-application imports its blueprints.
+generation and synchronization, scheduled courtesy-email jobs, payments
+request handling, and rendered public pages. Cases cover duplicate and invalid
+registration, repeated verification, ISO-week boundaries, idempotent sheet
+imports, and payment requests without an associated student. Model/route tests
+replace integrations with test doubles before the application imports its
+blueprints.
 
 No live external service is contacted. Google Sheets reads/writes, SMTP email
 delivery, Todoist task operations, Stripe API and webhook-signature handling,

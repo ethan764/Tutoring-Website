@@ -118,6 +118,33 @@ def test_checkout_reuses_existing_stripe_customer(client, factories, login_as, m
     assert checkout_calls[0][2] == 1
 
 
+def test_checkout_reads_quantity_from_query_when_form_value_is_absent(
+    client, factories, login_as, monkeypatch
+):
+    student = factories.student(name="Ada", email="ada@example.com")
+    user = factories.user(email="ada@example.com", verified=True, student_id=student.id)
+    login_as(client, user.email)
+    checkout_calls = []
+    monkeypatch.setattr(
+        payment_routes,
+        "create_customer",
+        lambda *args: SimpleNamespace(id="cus-query"),
+    )
+    monkeypatch.setattr(
+        payment_routes,
+        "create_checkout_session",
+        lambda *args: checkout_calls.append(args)
+        or SimpleNamespace(url="https://checkout.test/query-quantity"),
+    )
+
+    response = client.post(
+        f"/payments/fetch_stripe/{student.id}/39%20weekly?quantity=2",
+    )
+
+    assert response.status_code == 302
+    assert checkout_calls[0][2] == 2
+
+
 @pytest.mark.parametrize("quantity", ["not-a-number", "1.5", "0", "-1", "101"])
 def test_checkout_rejects_invalid_quantities_before_stripe_calls(
     client, factories, login_as, monkeypatch, quantity
@@ -226,6 +253,18 @@ def test_fetch_payment_history_returns_students_entries(client, factories, login
 
     assert response.status_code == 200
     assert response.json == [{"Timestamp": "2026-10-01", "Sum of Payment": 39}]
+
+
+def test_payment_history_rejects_user_without_student_association(client, factories, login_as, monkeypatch):
+    user = factories.user(email="unassigned@example.com", verified=True)
+    login_as(client, user.email)
+    payment_info_calls = []
+    monkeypatch.setattr(payment_routes, "get_payment_info", lambda: payment_info_calls.append(True))
+
+    response = client.get("/payments/fetch-record")
+
+    assert response.status_code == 400
+    assert payment_info_calls == []
 
 
 def test_payment_webhook_returns_success_or_error_status(client, monkeypatch):
