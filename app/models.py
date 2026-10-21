@@ -71,7 +71,7 @@ class Lesson(db.Model):
         return lesson
 
     @classmethod
-    def edit(cls, lesson_id, **kwargs):
+    def edit(cls, lesson_id, edit_todoist=True, **kwargs):
         lesson = cls.query.get(lesson_id)
         if not lesson:
             return None
@@ -80,14 +80,15 @@ class Lesson(db.Model):
         db.session.commit()
 
         # update Todoist lesson if lesson date or scheduled time has changed
-        todoist_lesson = TodoistLesson.query.filter_by(lesson_id=lesson_id).first()
-        if todoist_lesson:
-            date_string = lesson.lesson_date + " " + lesson.scheduled_time_pst
-            try:
-                updated_todoist_lesson = edit_lesson_date(todoist_lesson.todoist_task_id, date_string, completed=lesson.completed)
-                db.session.commit()
-            except Exception as e:
-                print(f"Failed to update Todoist lesson: {e}")
+        if edit_todoist:
+            todoist_lesson = TodoistLesson.query.filter_by(lesson_id=lesson_id).first()
+            if todoist_lesson:
+                date_string = lesson.lesson_date + " " + lesson.scheduled_time_pst
+                try:
+                    updated_todoist_lesson = edit_lesson_date(todoist_lesson.todoist_task_id, date_string, completed=lesson.completed)
+                    db.session.commit()
+                except Exception as e:
+                    print(f"Failed to update Todoist lesson: {e}")
 
         return lesson
         
