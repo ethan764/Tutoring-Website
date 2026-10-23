@@ -263,9 +263,9 @@ def send_courtesy_emails():
                     body_exact = body.replace('_name_', student.name).replace('_lsns_', lesson_info_str)
 
                     lesson_datetime = datetime.strptime(f"{lesson.lesson_date}", "%Y-%m-%d") 
-                    #sends emails at 8AM PST Day before
+                    #sends emails at 8AM Day before
                     send_time = lesson_datetime.replace(hour=8, minute=0, second=0) - timedelta(days=1)
-                    #adjust timezone to UTC for scheduler
+                    #adjust timezone from UTC to PST for scheduler
                     send_time = send_time + timedelta(hours=8)
 
                     #add job to db
@@ -285,9 +285,11 @@ def send_courtesy_emails():
                         func=send_scheduled_email,
                         trigger='date',
                         run_date=send_time,
-                        misfire_grace_time=36000000,
+                        misfire_grace_time=3600,
                         args=[student.email, subject, body_exact, True, new_job.id]
                     )
+
+                    print("Scheduled email for student:", student.name, "lesson:", lesson.lesson_date, "at", lesson.scheduled_time_pst, "to be sent at:", send_time)
         else:
             # emails by student
             for student_id, lessons in student_to_lessons.items():

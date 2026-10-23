@@ -28,7 +28,8 @@
     <hr>
     <h2>Scheduled Lessons</h2>
         {% for lesson in scheduled_lessons %}
-        <p><a href="{{ url_for('lessons.lesson_planner_edit_lesson', student_id=student.id, lesson_id=lesson.id) }}">Edit Lesson on {{ lesson.lesson_date }}</a></p>
+        <p><a href="{{ url_for('lessons.lesson_planner_edit_lesson', student_id=student.id, lesson_id=lesson.id) }}">Edit Lesson on {{ lesson.lesson_date }}</a> 
+            <a href="{{ url_for('lessons.delete_lesson', lesson_id=lesson.id) }}" onclick="return confirm('Are you sure you want to delete this lesson? \(Will still exist in Google Sheets Records\)')">[Delete]</a></p>
         <ul>
             <li>Lesson Date and Time: {{ lesson.lesson_date }}</li>
             <li>Notes: {{ lesson.lesson_notes }}</li>
@@ -58,7 +59,7 @@
             <p>Post-Lesson Notes: {{ lesson.post_lesson_notes }}</p>
             <p>Work: {{ lesson.lesson_work }}</p>
             <p>Pre-Lesson Notes: {{ lesson.lesson_notes }}</p>
-            <p><a href="{{ url_for('lessons.delete_lesson', lesson_id=lesson.id) }}" onclick="return confirm('Are you sure you want to delete this lesson?')">[Delete]</a></p>
+            <p><a href="{{ url_for('lessons.delete_lesson', lesson_id=lesson.id) }}" onclick="return confirm('Are you sure you want to delete this lesson? \(Will still exist in Google Sheets Records\)')">[Delete]</a></p>
         </div>
     {% endfor %}
     <hr>    

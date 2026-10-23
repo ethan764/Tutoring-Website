@@ -55,4 +55,5 @@ def send_scheduled_email(to_email, subject, body, use_html, job_id):
             db.session.commit()
 
     #send email
+    print("Sending scheduled email to:", to_email, "with subject:", subject)
     send_email(to_email, subject, body, use_html)
