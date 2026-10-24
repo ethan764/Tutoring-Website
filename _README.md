@@ -11,7 +11,8 @@ management routes are restricted to the email allowlist in
   [`app/__init__.py`](app/__init__.py) and starts Flask's development server.
 - [`app/extensions.py`](app/extensions.py) holds the shared SQLAlchemy,
   Bcrypt, and Flask-Login extension instances. The factory initializes them
-  for each Flask app.
+  for each Flask app. When enabled, it also restores pending reminder jobs
+  from the database before starting the scheduler.
 - [`app/models.py`](app/models.py) defines users, students, lessons, and the
   local mapping between lessons and Todoist tasks.
 - `app/<feature>/routes.py` contains Flask blueprints. The factory registers

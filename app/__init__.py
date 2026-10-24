@@ -38,6 +38,21 @@ def create_app(config=None):
 
     if app.config["SCHEDULER_ENABLED"]:
         scheduler.init_app(app)
+        from app.models import EmailPendingJob
+        from email_interactor import send_scheduled_email
+
+        with app.app_context():
+            for job in EmailPendingJob.query.all():
+                scheduler.add_job(
+                    id=str(job.id),
+                    func=send_scheduled_email,
+                    trigger='date',
+                    run_date=job.scheduled_time,
+                    misfire_grace_time=3600,
+                    args=[job.to_email, job.subject, job.body, job.use_html, job.id],
+                    replace_existing=True,
+                )
+
         scheduler.start()
 
     return app
