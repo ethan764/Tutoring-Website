@@ -1,5 +1,6 @@
 from flask import Flask
 from app.extensions import db, bcrypt, login_manager, scheduler
+from apscheduler.events import EVENT_JOB_MISSED
 
 class Config:
     SCHEDULER_API_ENABLED = True
@@ -42,6 +43,15 @@ def create_app(config=None):
         from email_interactor import send_scheduled_email
 
         with app.app_context():
+            def delete_job(event):
+                with app.app_context():
+                    job_id = event.job_id
+                    job = EmailPendingJob.query.get(job_id)
+                    if job:
+                        db.session.delete(job)
+                        db.session.commit()
+            scheduler.add_listener(delete_job, EVENT_JOB_MISSED)
+
             for job in EmailPendingJob.query.all():
                 scheduler.add_job(
                     id=str(job.id),

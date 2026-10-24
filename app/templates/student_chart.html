@@ -45,7 +45,7 @@
                 <option value="{{ lesson.id }}">{{ lesson.lesson_date }}</option>
             {% endfor %}
         </select>
-        <li><label for="lesson-duration">Duration:</label><input type="range" id="lesson-duration" name="lesson_duration" min="0" max="2"></li>
+        <li><label for="lesson-duration">Duration:</label><input type="number" id="lesson-duration" name="lesson_duration" min="0" max="2"></li>
         <li><label for="post_lesson-notes">Post-Lesson Notes:</label><textarea type="text" id="post_lesson-notes" name="post_lesson_notes"></textarea></li>
         <li><button type="submit">Submit</button></li>
     </form>
